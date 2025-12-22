@@ -1,0 +1,80 @@
+<div class="landing-page">
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="top-bar-content">
+      <h1 class="logo">For Society</h1>
+      @if (!isAuthenticated) {
+        <app-button type="text" (click)="navigateToLogin()">Login</app-button>
+      } @else {
+        <app-button type="text" (click)="navigateToFeed()">Go to Feed</app-button>
+      }
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <h2 class="hero-title">Together We Make a Difference</h2>
+    <p class="hero-subtitle">Support causes that matter. Track contributions. Build a better society.</p>
+
+    @if (fundStatus) {
+      <div class="fund-metrics">
+        <app-card variant="elevated" class="metric-card">
+          <div class="metric-label">Total Contributions</div>
+          <div class="metric-value success">₹{{ fundStatus.totalcontributions || '0.00' }}</div>
+        </app-card>
+        <app-card variant="elevated" class="metric-card">
+          <div class="metric-label">Total Donations</div>
+          <div class="metric-value info">₹{{ fundStatus.totaldonations || '0.00' }}</div>
+        </app-card>
+        <app-card variant="elevated" class="metric-card">
+          <div class="metric-label">Available Funds</div>
+          <div class="metric-value" [class.success]="parseFloat(fundStatus.availablefunds) >= 0" [class.danger]="parseFloat(fundStatus.availablefunds) < 0">
+            ₹{{ fundStatus.availablefunds || '0.00' }}
+          </div>
+        </app-card>
+      </div>
+    }
+
+    <div class="scroll-indicator">
+      <span>Scroll to explore</span>
+      <span class="arrow">↓</span>
+    </div>
+  </section>
+
+  <!-- Causes Feed -->
+  <section class="causes-section">
+    <h3 class="section-title">Active Causes</h3>
+    @if (loading) {
+      <div class="loading-state">Loading causes...</div>
+    } @else if (causes.length === 0) {
+      <div class="empty-state">
+        <p>No causes yet. Be the first to create one!</p>
+      </div>
+    } @else {
+      <div class="causes-list">
+        @for (cause of causes; track cause.causeid) {
+          <app-card variant="elevated" class="cause-card" [clickable]="true" appScrollAnimation>
+            <h4 class="cause-title">{{ cause.title }}</h4>
+            @if (cause.description) {
+              <p class="cause-description">{{ cause.description }}</p>
+            }
+            @if (cause.amount) {
+              <div class="cause-amount">Target: ₹{{ cause.amount }}</div>
+            }
+            <div class="cause-date">{{ formatDate(cause.createdat) }}</div>
+          </app-card>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- CTA Section -->
+  @if (!isAuthenticated) {
+    <section class="cta-section">
+      <app-button type="primary" [fullWidth]="true" (click)="navigateToLogin()">
+        Join Us Today
+      </app-button>
+    </section>
+  }
+</div>
+

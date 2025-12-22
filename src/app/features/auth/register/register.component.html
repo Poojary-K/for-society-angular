@@ -1,0 +1,73 @@
+<div class="register-overlay" (click)="goBack()">
+  <div class="register-modal" (click)="$event.stopPropagation()">
+    <button class="close-button" (click)="goBack()" aria-label="Close">×</button>
+    
+    <div class="register-content">
+      <h2 class="register-title">Join Us</h2>
+      <p class="register-subtitle">Create your account</p>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="register-form">
+        <app-input
+          type="text"
+          label="Name"
+          placeholder="Enter your name"
+          formControlName="name"
+          [required]="true"
+          [error]="registerForm.get('name')?.touched && registerForm.get('name')?.errors ? 'Name is required' : ''"
+        ></app-input>
+
+        <app-input
+          type="email"
+          label="Email (Optional)"
+          placeholder="Enter your email"
+          formControlName="email"
+          [error]="registerForm.get('email')?.touched && registerForm.get('email')?.errors ? 'Invalid email' : ''"
+        ></app-input>
+
+        <app-input
+          type="text"
+          label="Phone (Optional)"
+          placeholder="Enter your phone"
+          formControlName="phone"
+        ></app-input>
+
+        <app-input
+          type="password"
+          label="Password"
+          placeholder="Enter your password (min 8 characters)"
+          formControlName="password"
+          [required]="true"
+          [error]="registerForm.get('password')?.touched && registerForm.get('password')?.errors ? 'Password must be at least 8 characters' : ''"
+        ></app-input>
+
+        <div class="admin-section">
+          <button type="button" class="admin-toggle" (click)="toggleAdminCode()">
+            {{ showAdminCode ? '▼' : '▶' }} Admin Secret Code (Optional)
+          </button>
+          @if (showAdminCode) {
+            <app-input
+              type="text"
+              label="Admin Secret Code"
+              placeholder="Enter admin secret code"
+              formControlName="adminSecretCode"
+            ></app-input>
+          }
+        </div>
+
+        <app-button
+          type="primary"
+          [fullWidth]="true"
+          [loading]="loading"
+          [disabled]="registerForm.invalid"
+        >
+          Create Account
+        </app-button>
+      </form>
+
+      <div class="register-footer">
+        <p>Already have an account? <a (click)="navigateToLogin()">Login</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+

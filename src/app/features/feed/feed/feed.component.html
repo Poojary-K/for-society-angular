@@ -1,0 +1,112 @@
+<div class="feed-page">
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="top-bar-content">
+      <h1 class="logo">For Society</h1>
+      <div class="user-menu">
+        @if (isAdmin) {
+          <app-badge variant="admin" size="small">Admin</app-badge>
+        }
+        <div class="user-avatar" (click)="logout()">
+          {{ getAvatarInitial() }}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Feed Content -->
+  <div class="feed-content">
+    <!-- Fund Status Card -->
+    @if (fundStatus) {
+      <app-card variant="elevated" class="fund-status-card">
+        <h3 class="card-title">Fund Status</h3>
+        <div class="fund-metrics">
+          <div class="metric">
+            <div class="metric-label">Total Contributions</div>
+            <div class="metric-value success">₹{{ fundStatus.totalcontributions || '0.00' }}</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Total Donations</div>
+            <div class="metric-value info">₹{{ fundStatus.totaldonations || '0.00' }}</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Available Funds</div>
+            <div class="metric-value" [class.success]="parseFloat(fundStatus.availablefunds) >= 0" [class.danger]="parseFloat(fundStatus.availablefunds) < 0">
+              ₹{{ fundStatus.availablefunds || '0.00' }}
+            </div>
+          </div>
+        </div>
+      </app-card>
+    }
+
+    <!-- Causes Feed -->
+    <div class="section-header">
+      <h3 class="section-title">Causes</h3>
+    </div>
+    @if (loading) {
+      <div class="loading-state">Loading causes...</div>
+    } @else if (causes.length === 0) {
+      <app-card variant="outlined" class="empty-card">
+        <p class="empty-message">No causes yet. Create the first one!</p>
+      </app-card>
+    } @else {
+      <div class="causes-list">
+        @for (cause of causes; track cause.causeid) {
+          <app-card variant="elevated" class="cause-card" [clickable]="true">
+            <h4 class="cause-title">{{ cause.title }}</h4>
+            @if (cause.description) {
+              <p class="cause-description">{{ cause.description }}</p>
+            }
+            @if (cause.amount) {
+              <div class="cause-amount">Target: ₹{{ cause.amount }}</div>
+            }
+            <div class="cause-date">{{ formatDate(cause.createdat) }}</div>
+          </app-card>
+        }
+      </div>
+    }
+
+    <!-- Contributions Feed -->
+    @if (contributions.length > 0) {
+      <div class="section-header">
+        <h3 class="section-title">Recent Contributions</h3>
+      </div>
+      <div class="contributions-list">
+        @for (contribution of contributions.slice(0, 5); track contribution.contributionid) {
+          <app-card variant="elevated" class="contribution-card">
+            <div class="contribution-header">
+              <div class="contribution-info">
+                <div class="contribution-label">Contribution Amount</div>
+                <div class="contribution-amount">₹{{ contribution.amount }}</div>
+              </div>
+              <div class="contribution-date-info">
+                <div class="contribution-label">Date</div>
+                <div class="contribution-date">{{ formatDate(contribution.contributeddate) }}</div>
+              </div>
+            </div>
+          </app-card>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- FAB Menu -->
+  <div class="fab-container">
+    @if (showFabMenu) {
+      <div class="fab-menu">
+        @if (isAdmin) {
+          <button class="fab-menu-item" (click)="addContribution()">
+            <span>Add Contribution</span>
+          </button>
+        }
+        <button class="fab-menu-item" (click)="createCause()">
+          <span>Create Cause</span>
+        </button>
+      </div>
+    }
+    <app-button type="fab" (click)="toggleFabMenu()">
+      {{ showFabMenu ? '×' : '+' }}
+    </app-button>
+  </div>
+</div>
+

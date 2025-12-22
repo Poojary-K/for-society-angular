@@ -1,0 +1,6 @@
+@if (isLoading()) {
+  <div [class]="'loading-overlay' + (fullScreen ? ' loading-fullscreen' : '')">
+    <div class="loading-spinner"></div>
+  </div>
+}
+

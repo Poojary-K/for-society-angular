@@ -1,0 +1,253 @@
+.landing-page {
+  min-height: 100vh;
+  background-color: #ffffff;
+  overflow-x: hidden; // Prevent horizontal scroll
+  // Ensure page is scrollable
+  height: auto;
+  position: relative;
+}
+
+.top-bar {
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 100;
+  padding: 16px;
+}
+
+.top-bar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2563eb;
+  margin: 0;
+}
+
+.hero-section {
+  min-height: 100vh;
+  max-height: 100vh; // Prevent it from taking more than viewport
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: relative;
+  overflow: visible; // Allow content below to be visible
+  
+  // Smooth parallax effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: inherit;
+    transform: translateZ(0);
+    will-change: transform;
+    z-index: -1; // Behind content
+  }
+}
+
+.hero-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 16px;
+
+  @media (min-width: 1024px) {
+    font-size: 48px;
+  }
+}
+
+.hero-subtitle {
+  font-size: 18px;
+  margin-bottom: 48px;
+  opacity: 0.9;
+
+  @media (min-width: 1024px) {
+    font-size: 24px;
+  }
+}
+
+.fund-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 48px;
+}
+
+.metric-card {
+  text-align: left;
+  background-color: #ffffff !important; // Ensure card has white background
+  
+  // Override any inherited colors from hero section
+  .metric-label,
+  .metric-value {
+    color: #111827 !important;
+  }
+}
+
+.metric-label {
+  font-size: 14px;
+  color: #111827 !important; // Dark color for visibility on white card background
+  opacity: 1 !important; // Full opacity for better visibility
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827 !important; // Default to dark for visibility on white card
+
+  &.success {
+    color: #10b981 !important; // Green for positive values
+  }
+
+  &.info {
+    color: #06b6d4 !important; // Cyan for info values
+  }
+
+  &.danger {
+    color: #ef4444 !important; // Red for negative values
+  }
+}
+
+.scroll-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 48px;
+  animation: bounce 2s infinite;
+  color: white !important; // Ensure scroll indicator text is visible
+  cursor: pointer;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(5px);
+  }
+
+  span {
+    color: white !important;
+  }
+
+  .arrow {
+    font-size: 24px;
+    color: white !important;
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover .arrow {
+    transform: translateY(5px);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+}
+
+// Ensure page is scrollable and content is visible
+.landing-page {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  min-height: 100vh;
+  position: relative;
+  
+  // Enable hardware acceleration for smooth scrolling
+  transform: translateZ(0);
+  will-change: scroll-position;
+}
+
+.causes-section {
+  padding: 48px 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1; // Ensure it's above hero section
+  background-color: #ffffff; // Ensure white background
+}
+
+.section-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.causes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  
+  // Stagger animation for cards
+  app-card {
+    animation-delay: calc(var(--index, 0) * 0.1s);
+  }
+}
+
+.cause-card {
+  padding: 24px;
+}
+
+.cause-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #111827;
+}
+
+.cause-description {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.cause-amount {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 8px;
+}
+
+.cause-date {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 48px;
+  color: #6b7280;
+}
+
+.cta-section {
+  padding: 32px 16px;
+  max-width: 400px;
+  margin: 0 auto;
+  position: relative; // Changed from sticky to relative for better visibility
+  background-color: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  z-index: 1;
+}
+

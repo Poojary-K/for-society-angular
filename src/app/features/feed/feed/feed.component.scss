@@ -1,0 +1,273 @@
+.feed-page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding-bottom: 100px;
+}
+
+.top-bar {
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  z-index: 100;
+  padding: 16px;
+}
+
+.top-bar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2563eb;
+  margin: 0;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #2563eb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.feed-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.fund-status-card {
+  margin-bottom: 8px;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #111827;
+}
+
+.fund-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.metric {
+  text-align: center;
+}
+
+.metric-label {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+
+  &.success {
+    color: #10b981;
+  }
+
+  &.info {
+    color: #06b6d4;
+  }
+
+  &.danger {
+    color: #ef4444;
+  }
+}
+
+.section-header {
+  margin-top: 16px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.causes-list,
+.contributions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cause-card,
+.contribution-card {
+  padding: 20px;
+}
+
+.cause-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #111827;
+}
+
+.cause-description {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.cause-amount {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2563eb;
+  margin-bottom: 8px;
+}
+
+.cause-date,
+.contribution-date {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.contribution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.contribution-info,
+.contribution-date-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contribution-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280 !important; // Label color
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.contribution-amount {
+  font-size: 24px;
+  font-weight: 700;
+  color: #10b981 !important; // Ensure green color is visible
+  line-height: 1.2;
+}
+
+.contribution-date {
+  font-size: 14px;
+  color: #111827 !important; // Ensure date is visible
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.contribution-card {
+  padding: 20px;
+  background-color: #ffffff !important; // Ensure white background
+  border: 1px solid #e5e7eb; // Add border for better visibility
+  
+  // Make sure all text is visible
+  .contribution-label {
+    color: #6b7280 !important;
+  }
+}
+
+.loading-state,
+.empty-card {
+  text-align: center;
+  padding: 48px;
+  color: #6b7280;
+}
+
+.empty-message {
+  margin: 0;
+  font-size: 16px;
+}
+
+.fab-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+
+  @media (max-width: 640px) {
+    bottom: 20px;
+    right: 20px;
+    z-index: 1001; // Ensure it's above other elements on mobile
+  }
+}
+
+.fab-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+  animation: slideUp 0.2s ease-out;
+}
+
+.fab-menu-item {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: #f9fafb;
+    transform: translateX(-4px);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
