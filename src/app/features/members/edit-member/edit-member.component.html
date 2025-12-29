@@ -1,0 +1,64 @@
+<div class="edit-member-modal" [class.open]="isOpen()" *ngIf="isOpen()">
+  <div class="modal-backdrop" (click)="close()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Edit Member</h2>
+      <button class="close-btn" (click)="close()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form [formGroup]="memberForm" (ngSubmit)="onSubmit()" class="member-form">
+      <div class="form-group">
+        <app-input
+          formControlName="name"
+          type="text"
+          label="Name"
+          placeholder="Enter member name"
+          [required]="true"
+          [error]="nameError"
+        />
+      </div>
+
+      <div class="form-group">
+        <app-input
+          formControlName="email"
+          type="email"
+          label="Email"
+          placeholder="Enter email (optional)"
+          [error]="emailError"
+        />
+      </div>
+
+      <div class="form-group">
+        <app-input
+          formControlName="phone"
+          type="text"
+          label="Phone"
+          placeholder="Enter phone (optional)"
+        />
+      </div>
+
+      @if (canManageAdmin()) {
+        <div class="form-group">
+          <label class="form-label">Admin Status</label>
+          <label class="toggle">
+            <input type="checkbox" formControlName="isAdmin" />
+            <span class="slider"></span>
+            <span class="toggle-label">Admin privileges</span>
+          </label>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="loading()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading() || memberForm.invalid">
+          @if (loading()) {
+            <span class="btn-spinner"></span>
+          }
+          Update Member
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

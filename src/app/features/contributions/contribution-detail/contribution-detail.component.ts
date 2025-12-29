@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
@@ -6,26 +6,31 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { EditContributionComponent } from '../edit-contribution/edit-contribution.component';
+import { ContributionsService } from '../../../core/services/contributions.service';
 import { Contribution, Member } from '../../../core/models';
 
 @Component({
   selector: 'app-contribution-detail',
   standalone: true,
-  imports: [CommonModule, CardComponent, ButtonComponent],
+  imports: [CommonModule, CardComponent, ButtonComponent, EditContributionComponent],
   templateUrl: './contribution-detail.component.html',
   styleUrl: './contribution-detail.component.scss'
 })
 export class ContributionDetailComponent implements OnInit {
+  @ViewChild(EditContributionComponent) editContributionModal?: EditContributionComponent;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(ApiService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
+  private contributionsService = inject(ContributionsService);
 
   contribution = signal<Contribution | null>(null);
   member = signal<Member | null>(null);
+  members = signal<Member[]>([]);
   loading = signal<boolean>(true);
-  showEditForm = signal<boolean>(false);
+  loadingMembers = signal<boolean>(false);
 
   get isAdmin(): boolean {
     return this.authService.isAdmin();
@@ -54,6 +59,7 @@ export class ContributionDetailComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.contribution.set(response.data);
+          this.loadMembers(response.data.memberid);
           // Load member info if admin
           if (this.isAdmin && response.data.memberid) {
             this.loadMember(response.data.memberid);
@@ -68,6 +74,56 @@ export class ContributionDetailComponent implements OnInit {
         this.toastService.show('Failed to load contribution', 'error');
         this.loading.set(false);
         this.router.navigate(['/contributions']);
+      },
+    });
+  }
+
+  loadMembers(memberId: number): void {
+    if (!memberId) {
+      this.members.set([]);
+      return;
+    }
+
+    // Non-admins can only edit their own contribution, so restrict the list
+    if (!this.isAdmin) {
+      const user = this.currentUser;
+      if (user) {
+        this.members.set([
+          {
+            memberid: user.memberId,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            password: '',
+            joinedon: user.joinedOn,
+            is_admin: user.isAdmin,
+          },
+        ]);
+      } else {
+        this.members.set([
+          {
+            memberid: memberId,
+            name: `Member #${memberId}`,
+            email: null,
+            phone: null,
+            password: '',
+            joinedon: '',
+          },
+        ]);
+      }
+      return;
+    }
+
+    this.loadingMembers.set(true);
+    this.apiService.getMembers().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.members.set(response.data.members || []);
+        }
+        this.loadingMembers.set(false);
+      },
+      error: () => {
+        this.loadingMembers.set(false);
       },
     });
   }
@@ -97,7 +153,21 @@ export class ContributionDetailComponent implements OnInit {
   }
 
   editContribution(): void {
-    this.showEditForm.set(true);
+    if (this.editContributionModal) {
+      // Ensure member list is ready before opening
+      if (this.members().length === 0 && this.contribution()) {
+        this.loadMembers(this.contribution()!.memberid);
+      }
+      this.editContributionModal.open();
+    }
+  }
+
+  onContributionUpdated(updatedContribution: Contribution): void {
+    this.contribution.set(updatedContribution);
+    this.contributionsService.updateContribution(updatedContribution);
+    if (this.isAdmin) {
+      this.loadMember(updatedContribution.memberid);
+    }
   }
 
   deleteContribution(): void {
@@ -125,4 +195,3 @@ export class ContributionDetailComponent implements OnInit {
     this.router.navigate(['/contributions']);
   }
 }
-

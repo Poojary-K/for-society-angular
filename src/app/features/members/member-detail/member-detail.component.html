@@ -95,6 +95,13 @@
         </div>
       </app-card>
     }
+
+    <app-edit-member
+      *ngIf="member()"
+      [member]="member()!"
+      [canManageAdmin]="isAdmin"
+      (memberUpdated)="onMemberUpdated($event)"
+    />
   }
 
   @else {
@@ -108,4 +115,3 @@
     </app-card>
   }
 </div>
-

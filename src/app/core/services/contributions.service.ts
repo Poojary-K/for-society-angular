@@ -70,5 +70,12 @@ export class ContributionsService {
       this.contributionsSubject.next([contribution, ...current]);
     }
   }
-}
 
+  updateContribution(updated: Contribution): void {
+    const next = this.contributions().map((contribution) =>
+      contribution.contributionid === updated.contributionid ? updated : contribution
+    );
+    this.contributions.set(next);
+    this.contributionsSubject.next(next);
+  }
+}

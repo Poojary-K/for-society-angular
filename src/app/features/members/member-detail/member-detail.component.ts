@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
@@ -7,16 +7,18 @@ import { ToastService } from '../../../core/services/toast.service';
 import { ContributionsService } from '../../../core/services/contributions.service';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
+import { EditMemberComponent } from '../edit-member/edit-member.component';
 import { Member, Contribution } from '../../../core/models';
 
 @Component({
   selector: 'app-member-detail',
   standalone: true,
-  imports: [CommonModule, CardComponent, ButtonComponent],
+  imports: [CommonModule, CardComponent, ButtonComponent, EditMemberComponent],
   templateUrl: './member-detail.component.html',
   styleUrl: './member-detail.component.scss'
 })
 export class MemberDetailComponent implements OnInit {
+  @ViewChild(EditMemberComponent) editMemberModal?: EditMemberComponent;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(ApiService);
@@ -27,7 +29,6 @@ export class MemberDetailComponent implements OnInit {
   member = signal<Member | null>(null);
   contributions = signal<Contribution[]>([]);
   loading = signal<boolean>(true);
-  showEditForm = signal<boolean>(false);
 
   get isAdmin(): boolean {
     return this.authService.isAdmin();
@@ -91,7 +92,12 @@ export class MemberDetailComponent implements OnInit {
   }
 
   editMember(): void {
-    this.showEditForm.set(true);
+    this.editMemberModal?.open();
+  }
+
+  onMemberUpdated(updatedMember: Member): void {
+    this.member.set(updatedMember);
+    this.updateCurrentUser(updatedMember);
   }
 
   deleteMember(): void {
@@ -118,5 +124,21 @@ export class MemberDetailComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/members']);
   }
-}
 
+  private updateCurrentUser(updatedMember: Member): void {
+    const currentUser = this.authService.currentUser();
+    if (currentUser && currentUser.memberId === updatedMember.memberid) {
+      const updatedUser = {
+        ...currentUser,
+        name: updatedMember.name,
+        email: updatedMember.email,
+        phone: updatedMember.phone,
+        isAdmin: !!updatedMember.is_admin,
+        joinedOn: updatedMember.joinedon,
+      };
+      this.authService.currentUser.set(updatedUser);
+      this.authService.isAdmin.set(updatedUser.isAdmin || false);
+      localStorage.setItem('user_data', JSON.stringify(updatedUser));
+    }
+  }
+}
