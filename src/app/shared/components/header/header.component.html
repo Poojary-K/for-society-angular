@@ -1,0 +1,28 @@
+<header class="app-header">
+  <div class="header-content">
+    <!-- Hamburger Menu (Mobile) -->
+    <button class="hamburger-btn" (click)="toggleSidebar()" aria-label="Toggle menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Logo -->
+    <h1 class="logo" (click)="router.navigate(['/'])">For Society</h1>
+
+    <!-- Right Side Actions -->
+    <div class="header-actions">
+      @if (isAuthenticated()) {
+        @if (isAdmin()) {
+          <span class="admin-badge">Admin</span>
+        }
+        <button class="user-avatar-btn" (click)="router.navigate(['/profile'])" aria-label="View profile">
+          <div class="user-avatar">
+            {{ getAvatarInitial() }}
+          </div>
+        </button>
+      } @else {
+        <button class="login-btn" (click)="navigateToLogin()">Login</button>
+      }
+    </div>
+  </div>
+</header>
+

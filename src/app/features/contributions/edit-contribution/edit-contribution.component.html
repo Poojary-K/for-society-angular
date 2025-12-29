@@ -1,0 +1,56 @@
+<div class="edit-contribution-modal" [class.open]="isOpen()" *ngIf="isOpen()">
+  <div class="modal-backdrop" (click)="close()"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Edit Contribution</h2>
+      <button class="close-btn" (click)="close()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form [formGroup]="contributionForm" (ngSubmit)="onSubmit()" class="contribution-form">
+      <div class="form-group">
+        <label class="form-label">Member</label>
+        <input
+          type="text"
+          class="form-input"
+          placeholder="Search member..."
+          [value]="searchTerm()"
+          (input)="onSearchChange($any($event.target).value || '')"
+        />
+        <select formControlName="memberId" class="form-select">
+          <option [value]="null">Select a member</option>
+          @for (member of filteredMembers(); track member.memberid) {
+            <option [value]="member.memberid">{{ member.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <app-input
+          formControlName="amount"
+          type="number"
+          label="Amount (₹)"
+          placeholder="Enter amount"
+          [required]="true"
+        />
+      </div>
+      <div class="form-group">
+        <app-input
+          formControlName="contributedDate"
+          type="date"
+          label="Contribution Date"
+          [required]="true"
+        />
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="loading()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading() || contributionForm.invalid">
+          @if (loading()) {
+            <span class="btn-spinner"></span>
+          }
+          Update Contribution
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+

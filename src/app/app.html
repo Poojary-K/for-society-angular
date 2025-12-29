@@ -1,3 +1,14 @@
-<router-outlet />
-<app-toast />
-<app-loading />
+<div class="app-container">
+  <app-sidebar />
+  <main class="main-content">
+    <div class="scroll-container">
+      <app-header />
+      <div class="content-wrapper">
+        <router-outlet />
+      </div>
+    </div>
+  </main>
+  <app-profile-drawer />
+  <app-loading />
+  <app-toast />
+</div>

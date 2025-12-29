@@ -1,0 +1,82 @@
+<div class="causes-view">
+  <div class="page-header">
+    <h1 class="page-title">Causes</h1>
+    <p class="page-subtitle">Browse all fundraising causes</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-container">
+    <div class="search-input-wrapper">
+      <i class="fas fa-search search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search causes by title or description..."
+        [value]="searchQuery()"
+        (input)="onSearchChange($any($event.target).value || '')"
+      />
+      @if (searchQuery()) {
+        <button class="clear-search" (click)="onSearchChange('')" aria-label="Clear search">
+          <i class="fas fa-times"></i>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading causes...</p>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @else if (filteredCauses.length === 0) {
+    <app-card variant="outlined" class="empty-card">
+      <div class="empty-state">
+        <i class="fas fa-inbox empty-icon"></i>
+        <h3>{{ searchQuery() ? 'No causes found' : 'No causes yet' }}</h3>
+        <p>{{ searchQuery() ? 'Try adjusting your search terms' : 'Be the first to create a cause!' }}</p>
+      </div>
+    </app-card>
+  }
+
+  <!-- Causes List -->
+  @else {
+    <div class="causes-list">
+      @for (cause of filteredCauses; track cause.causeid) {
+        <app-card variant="elevated" class="cause-card" [clickable]="true">
+          <div class="cause-content" (click)="viewCause(cause)">
+            <div class="cause-header">
+              <h3 class="cause-title">{{ cause.title }}</h3>
+              @if (cause.amount) {
+                <div class="cause-amount">{{ formatAmount(cause.amount) }}</div>
+              }
+            </div>
+            @if (cause.description) {
+              <p class="cause-description">{{ cause.description }}</p>
+            }
+            <div class="cause-footer">
+              <div class="cause-date">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Created {{ formatDate(cause.createdat) }}</span>
+              </div>
+              @if (isAdmin) {
+                <div class="card-actions">
+                  <button class="action-btn edit-btn" (click)="editCause(cause, $event)" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn delete-btn" (click)="deleteCause(cause, $event)" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+</div>
+

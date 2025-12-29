@@ -1,0 +1,66 @@
+<div class="cause-detail">
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading cause details...</p>
+    </div>
+  }
+
+  @else if (cause()) {
+    <div class="detail-header">
+      <button class="back-button" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Back to Causes
+      </button>
+      @if (isAdmin) {
+        <div class="action-buttons">
+          <app-button type="secondary" (click)="editCause()">
+            <i class="fas fa-edit"></i> Edit
+          </app-button>
+          <app-button type="secondary" (click)="deleteCause()">
+            <i class="fas fa-trash"></i> Delete
+          </app-button>
+        </div>
+      }
+    </div>
+
+    <app-card variant="elevated" class="cause-detail-card">
+      <div class="cause-header">
+        <h1 class="cause-title">{{ cause()!.title }}</h1>
+        @if (cause()!.amount) {
+          <div class="cause-amount">{{ formatAmount(cause()!.amount) }}</div>
+        }
+      </div>
+
+      @if (cause()!.description) {
+        <div class="cause-description">
+          <h3>Description</h3>
+          <p>{{ cause()!.description }}</p>
+        </div>
+      }
+
+      <div class="cause-meta">
+        <div class="meta-item">
+          <i class="fas fa-calendar-alt"></i>
+          <span>Created on {{ formatDate(cause()!.createdat) }}</span>
+        </div>
+      </div>
+    </app-card>
+
+    <!-- Edit Modal -->
+    @if (cause()) {
+      <app-edit-cause [cause]="cause()!" (causeUpdated)="onCauseUpdated($event)" />
+    }
+  }
+
+  @else {
+    <app-card variant="outlined" class="error-card">
+      <div class="error-state">
+        <i class="fas fa-exclamation-circle"></i>
+        <h3>Cause not found</h3>
+        <p>The cause you're looking for doesn't exist or has been removed.</p>
+        <app-button type="primary" (click)="goBack()">Go Back</app-button>
+      </div>
+    </app-card>
+  }
+</div>
+

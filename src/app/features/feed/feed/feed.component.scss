@@ -193,14 +193,90 @@
   white-space: nowrap;
 }
 
+.contribution-member {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid #f3f4f6;
+  font-size: 14px;
+  color: #6b7280;
+
+  .member-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+
+    i {
+      font-size: 14px;
+      color: #9ca3af;
+    }
+  }
+}
+
 .contribution-card {
   padding: 20px;
   background-color: #ffffff !important; // Ensure white background
   border: 1px solid #e5e7eb; // Add border for better visibility
+  position: relative;
   
   // Make sure all text is visible
   .contribution-label {
     color: #6b7280 !important;
+  }
+
+  .contribution-content {
+    cursor: pointer;
+  }
+}
+
+.card-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.edit-btn {
+    background-color: #f3f4f6;
+    color: #2563eb;
+
+    &:hover {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+  }
+
+  &.delete-btn {
+    background-color: #fef2f2;
+    color: #ef4444;
+
+    &:hover {
+      background-color: #ef4444;
+      color: #ffffff;
+    }
   }
 }
 
@@ -214,6 +290,49 @@
 .empty-message {
   margin: 0;
   font-size: 16px;
+}
+
+.show-all-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+  padding: 16px;
+}
+
+.show-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background-color: #ffffff;
+  border: 2px solid #2563eb;
+  border-radius: 8px;
+  color: #2563eb;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+
+  &:hover {
+    background-color: #2563eb;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  i {
+    font-size: 14px;
+    transition: transform 0.2s ease;
+  }
+
+  &:hover i {
+    transform: scale(1.1);
+  }
 }
 
 .fab-container {
@@ -231,6 +350,12 @@
     right: 20px;
     z-index: 1001; // Ensure it's above other elements on mobile
   }
+
+  // FAB button should be below menu items in stacking order
+  app-button {
+    position: relative;
+    z-index: 1001;
+  }
 }
 
 .fab-menu {
@@ -239,6 +364,8 @@
   gap: 8px;
   margin-bottom: 8px;
   animation: slideUp 0.2s ease-out;
+  position: relative;
+  z-index: 1002;
 }
 
 .fab-menu-item {
@@ -253,10 +380,17 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: all 0.2s ease;
   white-space: nowrap;
+  position: relative;
+  z-index: 1002;
 
   &:hover {
     background-color: #f9fafb;
     transform: translateX(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: translateX(-2px) scale(0.98);
   }
 }
 

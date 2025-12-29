@@ -1,0 +1,113 @@
+<div class="contributions-view">
+  <div class="page-header">
+    <h1 class="page-title">{{ isAdmin ? 'All Contributions' : 'My Contributions' }}</h1>
+    <p class="page-subtitle">{{ isAdmin ? 'View and manage all contributions' : 'Track your contribution history' }}</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-container">
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="{{ isAdmin ? 'Search by member name...' : 'Search contributions...' }}"
+          [value]="searchQuery()"
+          (input)="onSearchChange($any($event.target).value || '')"
+        />
+        @if (searchQuery()) {
+          <button class="clear-search" (click)="onSearchChange('')" aria-label="Clear search">
+            <i class="fas fa-times"></i>
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="date-filters">
+      <div class="date-filter-group">
+        <label for="date-from">From</label>
+        <input
+          type="date"
+          id="date-from"
+          class="date-input"
+          [value]="filterDateFrom()"
+          (change)="onDateFromChange($any($event.target).value || '')"
+        />
+      </div>
+      <div class="date-filter-group">
+        <label for="date-to">To</label>
+        <input
+          type="date"
+          id="date-to"
+          class="date-input"
+          [value]="filterDateTo()"
+          (change)="onDateToChange($any($event.target).value || '')"
+        />
+      </div>
+      @if (filterDateFrom() || filterDateTo() || searchQuery()) {
+        <button class="clear-filters-btn" (click)="clearFilters()">
+          <i class="fas fa-times"></i> Clear
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading contributions...</p>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @else if (filteredContributions.length === 0) {
+    <app-card variant="outlined" class="empty-card">
+      <div class="empty-state">
+        <i class="fas fa-inbox empty-icon"></i>
+        <h3>{{ searchQuery() || filterDateFrom() || filterDateTo() ? 'No contributions found' : 'No contributions yet' }}</h3>
+        <p>{{ searchQuery() || filterDateFrom() || filterDateTo() ? 'Try adjusting your filters' : 'Start contributing to make a difference!' }}</p>
+      </div>
+    </app-card>
+  }
+
+  <!-- Contributions List -->
+  @else {
+    <div class="contributions-list">
+      @for (contribution of filteredContributions; track contribution.contributionid) {
+        <app-card variant="elevated" class="contribution-card" [clickable]="true">
+          <div class="contribution-content" (click)="viewContribution(contribution)">
+            <div class="contribution-header">
+              <div class="contribution-info">
+                <div class="contribution-label">Contribution Amount</div>
+                <div class="contribution-amount">{{ formatAmount(contribution.amount) }}</div>
+              </div>
+              <div class="contribution-date-info">
+                <div class="contribution-label">Date</div>
+                <div class="contribution-date">{{ formatDate(contribution.contributeddate) }}</div>
+              </div>
+            </div>
+            @if (isAdmin) {
+              <div class="contribution-member">
+                <div class="member-info">
+                  <i class="fas fa-user"></i>
+                  <span>{{ getMemberName(contribution.memberid) }}</span>
+                </div>
+                <div class="card-actions">
+                  <button class="action-btn edit-btn" (click)="editContribution(contribution, $event)" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn delete-btn" (click)="deleteContribution(contribution, $event)" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+</div>
+

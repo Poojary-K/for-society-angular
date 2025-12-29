@@ -1,0 +1,57 @@
+<div class="sidebar" [class.open]="isOpen()" [class.mobile]="isMobile()">
+  <!-- Backdrop for mobile -->
+  <div class="sidebar-backdrop" *ngIf="isMobile() && isOpen()" (click)="closeSidebar()"></div>
+
+  <!-- Sidebar content -->
+  <div class="sidebar-content">
+    <!-- Header -->
+    <div class="sidebar-header">
+      <h2 class="sidebar-title">For Society</h2>
+      <button class="sidebar-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
+        <i class="fas" [class.fa-times]="isOpen()" [class.fa-bars]="!isOpen()"></i>
+      </button>
+    </div>
+
+    <!-- Navigation Items -->
+    <nav class="sidebar-nav">
+      <a
+        *ngFor="let item of visibleNavItems()"
+        [routerLink]="item.route"
+        [class.active]="isActiveRoute(item.route)"
+        (click)="navigateTo(item.route)"
+        class="nav-item"
+      >
+        <i [class]="'fas ' + item.icon"></i>
+        <span class="nav-label">{{ item.label }}</span>
+      </a>
+    </nav>
+
+    <!-- User Section (when authenticated) -->
+    <div class="sidebar-footer" *ngIf="isAuthenticated()">
+      <div class="user-section">
+        <button class="user-button" (click)="openProfileDrawer()" aria-label="View profile">
+          <div class="user-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="user-info">
+            <span class="user-name">{{ currentUser()?.name }}</span>
+            <span class="user-role" *ngIf="isAdmin()">Admin</span>
+          </div>
+        </button>
+        <button class="logout-button" (click)="logout()" aria-label="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Login prompt (when not authenticated) -->
+    <div class="sidebar-footer" *ngIf="!isAuthenticated()">
+      <a [routerLink]="['/auth/login']" class="login-prompt" (click)="closeSidebar()">
+        <i class="fas fa-sign-in-alt"></i>
+        <span>Login</span>
+      </a>
+    </div>
+  </div>
+</div>
+

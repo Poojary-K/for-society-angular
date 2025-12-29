@@ -1,0 +1,124 @@
+<div class="add-contribution-modal" [class.open]="isOpen()" *ngIf="isOpen()">
+  <!-- Backdrop -->
+  <div class="modal-backdrop" (click)="close()"></div>
+
+  <!-- Modal Content -->
+  <div class="modal-content">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">Add Contribution</h2>
+      <button class="close-btn" (click)="close()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-message" *ngIf="showSuccess() && lastCreatedContribution()">
+      <div class="success-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <p class="success-text">
+        Contribution of <strong>₹{{ lastCreatedContribution()?.amount }}</strong> for
+        <strong>{{ getMemberName(lastCreatedContribution()!.memberid) }}</strong> added successfully!
+      </p>
+      <p class="success-subtext">{{ createdContributions().length }} contribution(s) added in this session</p>
+    </div>
+
+    <!-- Created Contributions List -->
+    <div class="created-contributions-list" *ngIf="createdContributions().length > 0 && !showSuccess()">
+      <h3 class="list-title">Added in this session ({{ createdContributions().length }})</h3>
+      <div class="contributions-items">
+        <div *ngFor="let contribution of createdContributions(); trackBy: trackByContributionId" class="contribution-item">
+          <div class="contribution-item-member">{{ getMemberName(contribution.memberid) }}</div>
+          <div class="contribution-item-amount">₹{{ contribution.amount }}</div>
+          <div class="contribution-item-date">{{ contribution.contributeddate }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="contributionForm" (ngSubmit)="onSubmit()" class="contribution-form" *ngIf="!showSuccess()">
+      <!-- Member Selection -->
+      <div class="form-group">
+        <label class="form-label">
+          Member <span class="required">*</span>
+        </label>
+        @if (loadingMembers()) {
+          <div class="loading-members">Loading members...</div>
+        } @else {
+          <div class="member-search">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Search members..."
+              [(ngModel)]="searchTerm"
+              [ngModelOptions]="{ standalone: true }"
+            />
+          </div>
+          <select formControlName="memberId" class="form-select" [class.input-error]="memberIdError">
+            <option value="">Select a member</option>
+            @for (member of filteredMembers(); track member.memberid) {
+              <option [value]="member.memberid">
+                {{ member.name }}
+                @if (member.email) {
+                  ({{ member.email }})
+                }
+                @if (member.is_admin) {
+                  - Admin
+                }
+              </option>
+            }
+          </select>
+          <div class="error-message" *ngIf="memberIdError">{{ memberIdError }}</div>
+        }
+      </div>
+
+      <!-- Amount -->
+      <div class="form-group">
+        <app-input
+          formControlName="amount"
+          type="number"
+          label="Amount (₹)"
+          placeholder="Enter contribution amount"
+          [required]="true"
+          [error]="amountError"
+        />
+      </div>
+
+      <!-- Date -->
+      <div class="form-group">
+        <app-input
+          formControlName="contributedDate"
+          type="date"
+          label="Contribution Date"
+          [required]="true"
+          [error]="dateError"
+        />
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="loading()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading() || contributionForm.invalid">
+          @if (loading()) {
+            <span class="btn-spinner"></span>
+          }
+          Add Contribution
+        </button>
+      </div>
+    </form>
+
+    <!-- Success Actions -->
+    <div class="success-actions" *ngIf="showSuccess()">
+      <app-button type="secondary" (click)="addAnother()" [fullWidth]="true">
+        <i class="fas fa-plus"></i> Add Another Contribution
+      </app-button>
+      <app-button type="primary" (click)="done()" [fullWidth]="true">
+        Done
+      </app-button>
+    </div>
+  </div>
+</div>
+

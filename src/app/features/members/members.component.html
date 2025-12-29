@@ -1,0 +1,126 @@
+<div class="members-view">
+  <div class="page-header">
+    <h1 class="page-title">Members</h1>
+    <p class="page-subtitle">View and manage all members (Admin only)</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-container">
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search by name, email, or phone..."
+          [value]="searchQuery()"
+          (input)="onSearchChange($any($event.target).value || '')"
+        />
+        @if (searchQuery()) {
+          <button class="clear-search" (click)="onSearchChange('')" aria-label="Clear search">
+            <i class="fas fa-times"></i>
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="role-filters">
+      <button
+        class="role-filter-btn"
+        [class.active]="filterRole() === 'all'"
+        (click)="onRoleFilterChange('all')"
+      >
+        All
+      </button>
+      <button
+        class="role-filter-btn"
+        [class.active]="filterRole() === 'admin'"
+        (click)="onRoleFilterChange('admin')"
+      >
+        Admins
+      </button>
+      <button
+        class="role-filter-btn"
+        [class.active]="filterRole() === 'member'"
+        (click)="onRoleFilterChange('member')"
+      >
+        Members
+      </button>
+      @if (searchQuery() || filterRole() !== 'all') {
+        <button class="clear-filters-btn" (click)="clearFilters()">
+          <i class="fas fa-times"></i> Clear
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading members...</p>
+    </div>
+  }
+
+  <!-- Empty State -->
+  @else if (filteredMembers.length === 0) {
+    <app-card variant="outlined" class="empty-card">
+      <div class="empty-state">
+        <i class="fas fa-inbox empty-icon"></i>
+        <h3>{{ searchQuery() || filterRole() !== 'all' ? 'No members found' : 'No members yet' }}</h3>
+        <p>{{ searchQuery() || filterRole() !== 'all' ? 'Try adjusting your filters' : 'No members have joined yet.' }}</p>
+      </div>
+    </app-card>
+  }
+
+  <!-- Members List -->
+  @else {
+    <div class="members-list">
+      @for (member of filteredMembers; track member.memberid) {
+        <app-card variant="elevated" class="member-card" [clickable]="true">
+          <div class="member-content" (click)="viewMember(member)">
+            <div class="member-header">
+              <div class="member-info">
+                <h3 class="member-name">{{ member.name }}</h3>
+                @if (member.is_admin) {
+                  <span class="admin-badge">
+                    <i class="fas fa-shield-alt"></i> Admin
+                  </span>
+                }
+              </div>
+              @if (isAdmin) {
+                <div class="card-actions">
+                  <button class="action-btn edit-btn" (click)="editMember(member, $event)" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="action-btn delete-btn" (click)="deleteMember(member, $event)" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              }
+            </div>
+            <div class="member-details">
+              @if (member.email) {
+                <div class="member-detail-item">
+                  <i class="fas fa-envelope"></i>
+                  <span>{{ member.email }}</span>
+                </div>
+              }
+              @if (member.phone) {
+                <div class="member-detail-item">
+                  <i class="fas fa-phone"></i>
+                  <span>{{ member.phone }}</span>
+                </div>
+              }
+              <div class="member-detail-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Joined {{ formatDate(member.joinedon) }}</span>
+              </div>
+            </div>
+          </div>
+        </app-card>
+      }
+    </div>
+  }
+</div>
+

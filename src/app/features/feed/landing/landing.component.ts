@@ -6,12 +6,13 @@ import { AuthService } from '../../../core/services/auth.service';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ScrollAnimationDirective } from '../../../shared/directives/scroll-animation.directive';
+import { PieChartComponent } from '../../../shared/components/pie-chart/pie-chart.component';
 import { Cause } from '../../../core/models';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, CardComponent, ButtonComponent, ScrollAnimationDirective],
+  imports: [CommonModule, CardComponent, ButtonComponent, ScrollAnimationDirective, PieChartComponent],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss',
 })

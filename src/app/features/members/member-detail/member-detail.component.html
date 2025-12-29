@@ -1,0 +1,111 @@
+<div class="member-detail">
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading member details...</p>
+    </div>
+  }
+
+  @else if (member()) {
+    <div class="detail-header">
+      <button class="back-button" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Back to Members
+      </button>
+      @if (isAdmin) {
+        <div class="action-buttons">
+          <app-button type="secondary" (click)="editMember()">
+            <i class="fas fa-edit"></i> Edit
+          </app-button>
+          <app-button type="secondary" (click)="deleteMember()">
+            <i class="fas fa-trash"></i> Delete
+          </app-button>
+        </div>
+      }
+    </div>
+
+    <div class="member-details-grid">
+      <app-card variant="elevated" class="member-info-card">
+        <div class="member-header">
+          <div class="member-name-section">
+            <h1 class="member-name">{{ member()!.name }}</h1>
+            @if (member()!.is_admin) {
+              <span class="admin-badge">
+                <i class="fas fa-shield-alt"></i> Admin
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="member-details">
+          @if (member()!.email) {
+            <div class="detail-item">
+              <i class="fas fa-envelope"></i>
+              <div class="detail-content">
+                <div class="detail-label">Email</div>
+                <div class="detail-value">{{ member()!.email }}</div>
+              </div>
+            </div>
+          }
+
+          @if (member()!.phone) {
+            <div class="detail-item">
+              <i class="fas fa-phone"></i>
+              <div class="detail-content">
+                <div class="detail-label">Phone</div>
+                <div class="detail-value">{{ member()!.phone }}</div>
+              </div>
+            </div>
+          }
+
+          <div class="detail-item">
+            <i class="fas fa-calendar-alt"></i>
+            <div class="detail-content">
+              <div class="detail-label">Joined On</div>
+              <div class="detail-value">{{ formatDate(member()!.joinedon) }}</div>
+            </div>
+          </div>
+        </div>
+      </app-card>
+
+      <app-card variant="elevated" class="contributions-summary-card">
+        <h2 class="card-title">Contributions Summary</h2>
+        <div class="summary-stats">
+          <div class="stat-item">
+            <div class="stat-label">Total Contributions</div>
+            <div class="stat-value">{{ contributions().length }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Total Amount</div>
+            <div class="stat-value amount">{{ formatAmount(getTotalContributions().toString()) }}</div>
+          </div>
+        </div>
+      </app-card>
+    </div>
+
+    @if (contributions().length > 0) {
+      <app-card variant="elevated" class="contributions-list-card">
+        <h2 class="card-title">Recent Contributions</h2>
+        <div class="contributions-list">
+          @for (contribution of contributions().slice(0, 10); track contribution.contributionid) {
+            <div class="contribution-item">
+              <div class="contribution-amount">{{ formatAmount(contribution.amount) }}</div>
+              <div class="contribution-date">{{ formatDate(contribution.contributeddate) }}</div>
+            </div>
+          }
+        </div>
+      </app-card>
+    }
+  }
+
+  @else {
+    <app-card variant="outlined" class="error-card">
+      <div class="error-state">
+        <i class="fas fa-exclamation-circle"></i>
+        <h3>Member not found</h3>
+        <p>The member you're looking for doesn't exist or has been removed.</p>
+        <app-button type="primary" (click)="goBack()">Go Back</app-button>
+      </div>
+    </app-card>
+  }
+</div>
+

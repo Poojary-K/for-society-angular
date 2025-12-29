@@ -1,0 +1,73 @@
+<div class="edit-cause-modal" [class.open]="isOpen()" *ngIf="isOpen()">
+  <!-- Backdrop -->
+  <div class="modal-backdrop" (click)="close()"></div>
+
+  <!-- Modal Content -->
+  <div class="modal-content">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">Edit Cause</h2>
+      <button class="close-btn" (click)="close()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="causeForm" (ngSubmit)="onSubmit()" class="cause-form">
+      <!-- Title -->
+      <div class="form-group">
+        <app-input
+          formControlName="title"
+          type="text"
+          label="Title"
+          placeholder="Enter cause title"
+          [required]="true"
+          [error]="titleError"
+        />
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label class="form-label">
+          Description
+          <span class="char-counter" [class.warning]="descriptionLength > maxDescriptionLength * 0.9">
+            {{ descriptionLength }} / {{ maxDescriptionLength }}
+          </span>
+        </label>
+        <textarea
+          formControlName="description"
+          class="form-textarea"
+          placeholder="Enter cause description (optional)"
+          rows="4"
+          [maxlength]="maxDescriptionLength"
+        ></textarea>
+        <div class="error-message" *ngIf="descriptionError">{{ descriptionError }}</div>
+      </div>
+
+      <!-- Amount -->
+      <div class="form-group">
+        <app-input
+          formControlName="amount"
+          type="number"
+          label="Target Amount (₹)"
+          placeholder="Enter target amount (optional)"
+          [error]="amountError"
+        />
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="loading()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading() || causeForm.invalid">
+          @if (loading()) {
+            <span class="btn-spinner"></span>
+          }
+          Update Cause
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+

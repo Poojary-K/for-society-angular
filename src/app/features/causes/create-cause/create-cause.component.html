@@ -1,0 +1,105 @@
+<div class="create-cause-modal" [class.open]="isOpen()" *ngIf="isOpen()">
+  <!-- Backdrop -->
+  <div class="modal-backdrop" (click)="close()"></div>
+
+  <!-- Modal Content -->
+  <div class="modal-content">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">Create Cause</h2>
+      <button class="close-btn" (click)="close()" aria-label="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Success Message -->
+    <div class="success-message" *ngIf="showSuccess() && lastCreatedCause()">
+      <div class="success-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <p class="success-text">Cause "<strong>{{ lastCreatedCause()?.title }}</strong>" created successfully!</p>
+      <p class="success-subtext">{{ createdCauses().length }} cause(s) created in this session</p>
+    </div>
+
+    <!-- Created Causes List -->
+    <div class="created-causes-list" *ngIf="createdCauses().length > 0 && !showSuccess()">
+      <h3 class="list-title">Created in this session ({{ createdCauses().length }})</h3>
+      <div class="causes-items">
+        <div *ngFor="let cause of createdCauses(); trackBy: trackByCauseId" class="cause-item">
+          <div class="cause-item-title">{{ cause.title }}</div>
+          <div class="cause-item-amount" *ngIf="cause.amount">
+            ₹{{ cause.amount }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="causeForm" (ngSubmit)="onSubmit()" class="cause-form" *ngIf="!showSuccess()">
+      <!-- Title -->
+      <div class="form-group">
+        <app-input
+          formControlName="title"
+          type="text"
+          label="Title"
+          placeholder="Enter cause title"
+          [required]="true"
+          [error]="titleError"
+        />
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label class="form-label">
+          Description
+          <span class="char-counter" [class.warning]="descriptionLength > maxDescriptionLength * 0.9">
+            {{ descriptionLength }} / {{ maxDescriptionLength }}
+          </span>
+        </label>
+        <textarea
+          formControlName="description"
+          class="form-textarea"
+          placeholder="Enter cause description (optional)"
+          rows="4"
+          [maxlength]="maxDescriptionLength"
+        ></textarea>
+        <div class="error-message" *ngIf="descriptionError">{{ descriptionError }}</div>
+      </div>
+
+      <!-- Amount -->
+      <div class="form-group">
+        <app-input
+          formControlName="amount"
+          type="number"
+          label="Target Amount (₹)"
+          placeholder="Enter target amount (optional)"
+          [error]="amountError"
+        />
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="loading()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="loading() || causeForm.invalid">
+          @if (loading()) {
+            <span class="btn-spinner"></span>
+          }
+          Create Cause
+        </button>
+      </div>
+    </form>
+
+    <!-- Success Actions -->
+    <div class="success-actions" *ngIf="showSuccess()">
+      <app-button type="secondary" (click)="addAnother()" [fullWidth]="true">
+        <i class="fas fa-plus"></i> Add Another Cause
+      </app-button>
+      <app-button type="primary" (click)="done()" [fullWidth]="true">
+        Done
+      </app-button>
+    </div>
+  </div>
+</div>
+

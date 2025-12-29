@@ -17,8 +17,20 @@ export class ApiService {
     return this.http.get<ApiResponse<{ causes: any[] }>>(`${this.baseUrl}/causes`);
   }
 
+  getCauseById(id: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/causes/${id}`);
+  }
+
   createCause(data: any): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${this.baseUrl}/causes`, data);
+  }
+
+  updateCause(id: number, data: any): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.baseUrl}/causes/${id}`, data);
+  }
+
+  deleteCause(id: number): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/causes/${id}`);
   }
 
   // Contributions
@@ -26,13 +38,37 @@ export class ApiService {
     return this.http.get<ApiResponse<{ contributions: any[] }>>(`${this.baseUrl}/contributions`);
   }
 
+  getContributionById(id: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/contributions/${id}`);
+  }
+
   createContribution(data: any): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(`${this.baseUrl}/contributions`, data);
+  }
+
+  updateContribution(id: number, data: any): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.baseUrl}/contributions/${id}`, data);
+  }
+
+  deleteContribution(id: number): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/contributions/${id}`);
   }
 
   // Members
   getMembers(): Observable<ApiResponse<{ members: any[] }>> {
     return this.http.get<ApiResponse<{ members: any[] }>>(`${this.baseUrl}/members`);
+  }
+
+  getMemberById(id: number): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/members/${id}`);
+  }
+
+  updateMember(id: number, data: any): Observable<ApiResponse<any>> {
+    return this.http.put<ApiResponse<any>>(`${this.baseUrl}/members/${id}`, data);
+  }
+
+  deleteMember(id: number): Observable<ApiResponse<any>> {
+    return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/members/${id}`);
   }
 
   // Funds

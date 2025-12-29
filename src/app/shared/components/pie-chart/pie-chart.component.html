@@ -1,0 +1,45 @@
+<div class="pie-chart-container">
+  <div class="chart-wrapper">
+    <svg viewBox="0 0 200 200" class="pie-chart">
+      <!-- Contributions slice -->
+      <path
+        [attr.d]="getContributionsPath()"
+        fill="#10B981"
+        class="chart-slice"
+        [class.empty]="chartData().contributions === 0"
+      />
+      <!-- Donations slice -->
+      <path
+        [attr.d]="getDonationsPath()"
+        fill="#2563EB"
+        class="chart-slice"
+        [class.empty]="chartData().donations === 0"
+      />
+      <!-- Center circle for available funds -->
+      <circle cx="100" cy="100" r="50" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="2" />
+      <text x="100" y="95" text-anchor="middle" class="center-label">Available</text>
+      <text x="100" y="110" text-anchor="middle" class="center-value">
+        {{ formatCurrency(availableFunds) }}
+      </text>
+    </svg>
+  </div>
+  <div class="chart-legend">
+    <div class="legend-item">
+      <div class="legend-color" style="background: #10B981;"></div>
+      <div class="legend-info">
+        <span class="legend-label">Contributions</span>
+        <span class="legend-value">{{ formatCurrency(chartData().contributions) }}</span>
+        <span class="legend-percent">{{ chartData().contributionsPercent }}%</span>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color" style="background: #2563EB;"></div>
+      <div class="legend-info">
+        <span class="legend-label">Donations</span>
+        <span class="legend-value">{{ formatCurrency(chartData().donations) }}</span>
+        <span class="legend-percent">{{ chartData().donationsPercent }}%</span>
+      </div>
+    </div>
+  </div>
+</div>
+

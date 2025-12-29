@@ -1,0 +1,86 @@
+<div class="profile-drawer" [class.open]="isOpen()" *ngIf="isAuthenticated()">
+  <!-- Backdrop -->
+  <div class="drawer-backdrop" (click)="close()"></div>
+
+  <!-- Drawer Content -->
+  <div class="drawer-content">
+    <!-- Header -->
+    <div class="drawer-header">
+      <h2 class="drawer-title">Profile</h2>
+      <button class="drawer-close" (click)="close()" aria-label="Close profile">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- User Info -->
+    <div class="user-profile" *ngIf="currentUser()">
+      <div class="user-avatar-large">
+        <i class="fas fa-user"></i>
+      </div>
+      <h3 class="user-name">{{ currentUser()?.name }}</h3>
+      <p class="user-email" *ngIf="currentUser()?.email">{{ currentUser()?.email }}</p>
+      <p class="user-phone" *ngIf="currentUser()?.phone">{{ currentUser()?.phone }}</p>
+      <span class="user-badge" *ngIf="currentUser()?.isAdmin">Admin</span>
+      <p class="user-joined">
+        Joined: {{ formatDate(currentUser()?.joinedOn || '') }}
+      </p>
+    </div>
+
+    <!-- Contribution Summary -->
+    <div class="contribution-summary">
+      <div class="summary-card">
+        <div class="summary-icon">
+          <i class="fas fa-hand-holding-dollar"></i>
+        </div>
+        <div class="summary-info">
+          <p class="summary-label">Total Contributed</p>
+          <p class="summary-value">{{ formatCurrency(totalContributed()) }}</p>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">
+          <i class="fas fa-list"></i>
+        </div>
+        <div class="summary-info">
+          <p class="summary-label">Contributions</p>
+          <p class="summary-value">{{ contributionCount() }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contributions List -->
+    <div class="contributions-section">
+      <h4 class="section-title">My Contributions</h4>
+      <div class="contributions-list" *ngIf="!loading()">
+        <div
+          *ngFor="let contribution of getUserContributions(); trackBy: trackByContributionId"
+          class="contribution-item"
+        >
+          <div class="contribution-amount">
+            {{ formatCurrency(contribution.amount) }}
+          </div>
+          <div class="contribution-date">
+            {{ formatDate(contribution.contributeddate) }}
+          </div>
+        </div>
+        <div class="empty-state" *ngIf="getUserContributions().length === 0">
+          <i class="fas fa-inbox"></i>
+          <p>No contributions yet</p>
+        </div>
+      </div>
+      <div class="loading-state" *ngIf="loading()">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>Loading contributions...</p>
+      </div>
+    </div>
+
+    <!-- Logout Button -->
+    <div class="drawer-footer">
+      <button class="logout-button" (click)="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+</div>
+

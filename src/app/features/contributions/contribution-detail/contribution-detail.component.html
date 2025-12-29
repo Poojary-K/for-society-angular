@@ -1,0 +1,76 @@
+<div class="contribution-detail">
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading contribution details...</p>
+    </div>
+  }
+
+  @else if (contribution()) {
+    <div class="detail-header">
+      <button class="back-button" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i> Back to Contributions
+      </button>
+      @if (canEdit) {
+        <div class="action-buttons">
+          <app-button type="secondary" (click)="editContribution()">
+            <i class="fas fa-edit"></i> Edit
+          </app-button>
+          <app-button type="secondary" (click)="deleteContribution()">
+            <i class="fas fa-trash"></i> Delete
+          </app-button>
+        </div>
+      }
+    </div>
+
+    <app-card variant="elevated" class="contribution-detail-card">
+      <div class="contribution-header">
+        <div class="contribution-amount-large">{{ formatAmount(contribution()!.amount) }}</div>
+        <div class="contribution-label">Contribution Amount</div>
+      </div>
+
+      <div class="contribution-info">
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Contribution Date</span>
+          </div>
+          <div class="info-value">{{ formatDate(contribution()!.contributeddate) }}</div>
+        </div>
+
+        <div class="info-item">
+          <div class="info-label">
+            <i class="fas fa-clock"></i>
+            <span>Created On</span>
+          </div>
+          <div class="info-value">{{ formatDate(contribution()!.createdat) }}</div>
+        </div>
+
+        @if (isAdmin && member()) {
+          <div class="info-item">
+            <div class="info-label">
+              <i class="fas fa-user"></i>
+              <span>Member</span>
+            </div>
+            <div class="info-value">{{ member()!.name }}</div>
+            @if (member()!.email) {
+              <div class="info-subvalue">{{ member()!.email }}</div>
+            }
+          </div>
+        }
+      </div>
+    </app-card>
+  }
+
+  @else {
+    <app-card variant="outlined" class="error-card">
+      <div class="error-state">
+        <i class="fas fa-exclamation-circle"></i>
+        <h3>Contribution not found</h3>
+        <p>The contribution you're looking for doesn't exist or has been removed.</p>
+        <app-button type="primary" (click)="goBack()">Go Back</app-button>
+      </div>
+    </app-card>
+  }
+</div>
+
