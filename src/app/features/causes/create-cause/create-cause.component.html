@@ -77,6 +77,49 @@
         />
       </div>
 
+      <!-- Images -->
+      <div class="form-group">
+        <label class="form-label">Images (optional)</label>
+        <div class="image-upload">
+          <label class="upload-btn" [class.disabled]="imagesUploading()">
+            <input
+              #causeImagesInput
+              type="file"
+              accept="image/*"
+              multiple
+              (change)="onImagesSelected($event)"
+              [disabled]="imagesUploading()"
+            />
+            <i class="fas fa-image"></i>
+            <span>Add Images</span>
+          </label>
+          <div class="upload-info">
+            <span>
+              @if (selectedImages().length > 0) {
+                {{ selectedImages().length }} selected
+              } @else {
+                No images selected
+              }
+            </span>
+            @if (selectedImages().length > 0) {
+              <button type="button" class="clear-btn" (click)="clearSelectedImages(causeImagesInput)">
+                Clear
+              </button>
+            }
+          </div>
+          @if (selectedImages().length > 0) {
+            <div class="selected-files">
+              @for (file of selectedImages(); track trackByFile) {
+                <span class="selected-file">{{ file.name }}</span>
+              }
+            </div>
+          }
+          @if (imagesUploading()) {
+            <div class="uploading-text">Uploading images...</div>
+          }
+        </div>
+      </div>
+
       <!-- Form Actions -->
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="loading()">
@@ -102,4 +145,3 @@
     </div>
   </div>
 </div>
-

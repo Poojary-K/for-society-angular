@@ -7,7 +7,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { EditCauseComponent } from '../edit-cause/edit-cause.component';
-import { Cause } from '../../../core/models';
+import { Cause, CauseImage } from '../../../core/models';
 
 @Component({
   selector: 'app-cause-detail',
@@ -27,6 +27,15 @@ export class CauseDetailComponent implements OnInit {
   cause = signal<Cause | null>(null);
   loading = signal<boolean>(true);
   showEditForm = signal<boolean>(false);
+  images = signal<CauseImage[]>([]);
+  imagesLoading = signal<boolean>(false);
+  imagesUploading = signal<boolean>(false);
+  replacingImageId = signal<number | null>(null);
+  deletingImageId = signal<number | null>(null);
+  imagesExpanded = signal<boolean>(false);
+  imageViewerOpen = signal<boolean>(false);
+  activeImageIndex = signal<number>(0);
+  imageLoadFailures = signal<Set<number>>(new Set());
 
   get isAdmin(): boolean {
     return this.authService.isAdmin();
@@ -45,6 +54,7 @@ export class CauseDetailComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.cause.set(response.data);
+          this.loadCauseImages(response.data.causeid);
         } else {
           this.toastService.show('Failed to load cause', 'error');
           this.router.navigate(['/causes']);
@@ -57,6 +67,95 @@ export class CauseDetailComponent implements OnInit {
         this.router.navigate(['/causes']);
       },
     });
+  }
+
+  loadCauseImages(causeId: number): void {
+    this.imagesLoading.set(true);
+    this.apiService.getCauseImages(causeId).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.images.set(response.data.images || []);
+        }
+        this.imagesLoading.set(false);
+      },
+      error: () => {
+        this.imagesLoading.set(false);
+      },
+    });
+  }
+
+  toggleImagesExpanded(): void {
+    this.imagesExpanded.update((value) => !value);
+  }
+
+  openImageViewer(index: number): void {
+    const images = this.images();
+    if (images.length === 0) return;
+    const safeIndex = Math.max(0, Math.min(index, images.length - 1));
+    this.activeImageIndex.set(safeIndex);
+    this.imageViewerOpen.set(true);
+  }
+
+  closeImageViewer(): void {
+    this.imageViewerOpen.set(false);
+  }
+
+  nextImage(): void {
+    const images = this.images();
+    if (images.length === 0) return;
+    this.activeImageIndex.update((value) => (value + 1) % images.length);
+  }
+
+  prevImage(): void {
+    const images = this.images();
+    if (images.length === 0) return;
+    this.activeImageIndex.update((value) => (value - 1 + images.length) % images.length);
+  }
+
+  get activeImage(): CauseImage | null {
+    const images = this.images();
+    const index = this.activeImageIndex();
+    return images[index] || null;
+  }
+
+  getImageUrl(url: string): string {
+    const fileId = this.getDriveFileId(url);
+    if (!fileId) return url;
+    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  }
+
+  getImageFallbackUrl(url: string): string | null {
+    const fileId = this.getDriveFileId(url);
+    if (!fileId) return null;
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
+  }
+
+  hasImageError(image: CauseImage): boolean {
+    return this.imageLoadFailures().has(image.imageid);
+  }
+
+  onViewerImageError(image: CauseImage, event: Event): void {
+    const target = event.target as HTMLImageElement;
+    const fallbackUrl = this.getImageFallbackUrl(image.url);
+    if (fallbackUrl && !target.dataset['fallbackApplied']) {
+      target.dataset['fallbackApplied'] = 'true';
+      target.src = fallbackUrl;
+      return;
+    }
+    this.imageLoadFailures.update((current) => {
+      const next = new Set(current);
+      next.add(image.imageid);
+      return next;
+    });
+  }
+
+  private getDriveFileId(url: string): string | null {
+    if (!url || !url.includes('drive.google.com')) return null;
+    const idMatch = url.match(/id=([^&]+)/);
+    if (idMatch) return idMatch[1];
+    const pathMatch = url.match(/\/d\/([^/]+)/);
+    if (pathMatch) return pathMatch[1];
+    return null;
   }
 
   formatDate(dateString: string): string {
@@ -106,8 +205,93 @@ export class CauseDetailComponent implements OnInit {
     }
   }
 
+  onCauseImagesSelected(event: Event): void {
+    const cause = this.cause();
+    if (!cause) return;
+
+    const input = event.target as HTMLInputElement;
+    const files = input.files ? Array.from(input.files) : [];
+    if (files.length === 0) return;
+
+    this.imagesUploading.set(true);
+    this.apiService.uploadCauseImages(cause.causeid, files).subscribe({
+      next: (response) => {
+        if (response.success) {
+          const newImages = response.data.images || [];
+          this.images.update((current) => [...newImages, ...current]);
+          this.toastService.show('Cause images uploaded', 'success');
+        } else {
+          this.toastService.show('Failed to upload cause images', 'error');
+        }
+        this.imagesUploading.set(false);
+      },
+      error: () => {
+        this.toastService.show('Failed to upload cause images', 'error');
+        this.imagesUploading.set(false);
+      },
+    });
+
+    input.value = '';
+  }
+
+  onReplaceCauseImage(image: CauseImage, event: Event): void {
+    const cause = this.cause();
+    if (!cause) return;
+
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.replacingImageId.set(image.imageid);
+    this.apiService.replaceCauseImage(cause.causeid, image.imageid, file).subscribe({
+      next: (response) => {
+        if (response.success) {
+          const updated = response.data;
+          this.images.update((current) =>
+            current.map((item) => (item.imageid === updated.imageid ? updated : item))
+          );
+          this.toastService.show('Cause image replaced', 'success');
+        } else {
+          this.toastService.show('Failed to replace cause image', 'error');
+        }
+        this.replacingImageId.set(null);
+      },
+      error: () => {
+        this.toastService.show('Failed to replace cause image', 'error');
+        this.replacingImageId.set(null);
+      },
+    });
+
+    input.value = '';
+  }
+
+  deleteCauseImage(image: CauseImage): void {
+    const cause = this.cause();
+    if (!cause) return;
+
+    if (!confirm('Delete this image? This action cannot be undone.')) {
+      return;
+    }
+
+    this.deletingImageId.set(image.imageid);
+    this.apiService.deleteCauseImage(cause.causeid, image.imageid).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.images.update((current) => current.filter((item) => item.imageid !== image.imageid));
+          this.toastService.show('Cause image deleted', 'success');
+        } else {
+          this.toastService.show('Failed to delete cause image', 'error');
+        }
+        this.deletingImageId.set(null);
+      },
+      error: () => {
+        this.toastService.show('Failed to delete cause image', 'error');
+        this.deletingImageId.set(null);
+      },
+    });
+  }
+
   goBack(): void {
     this.router.navigate(['/causes']);
   }
 }
-

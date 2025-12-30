@@ -24,6 +24,8 @@ export class CreateCauseComponent implements OnInit {
   createdCauses = signal<Cause[]>([]);
   showSuccess = signal<boolean>(false);
   lastCreatedCause = signal<Cause | null>(null);
+  selectedImages = signal<File[]>([]);
+  imagesUploading = signal<boolean>(false);
 
   causeForm: FormGroup;
 
@@ -44,12 +46,14 @@ export class CreateCauseComponent implements OnInit {
   open(): void {
     this.isOpen.set(true);
     this.resetForm();
+    this.resetImages();
     this.showSuccess.set(false);
   }
 
   close(): void {
     this.isOpen.set(false);
     this.resetForm();
+    this.resetImages();
     this.createdCauses.set([]);
     this.showSuccess.set(false);
     this.lastCreatedCause.set(null);
@@ -61,6 +65,11 @@ export class CreateCauseComponent implements OnInit {
     this.causeForm.markAsPristine();
   }
 
+  resetImages(): void {
+    this.selectedImages.set([]);
+    this.imagesUploading.set(false);
+  }
+
   onSubmit(): void {
     // Prevent duplicate submissions
     if (this.loading()) {
@@ -70,6 +79,7 @@ export class CreateCauseComponent implements OnInit {
     if (this.causeForm.valid) {
       this.loading.set(true);
       const formValue = this.causeForm.value;
+      const images = this.selectedImages();
 
       const causeData: CreateCauseRequest = {
         title: formValue.title.trim(),
@@ -77,43 +87,77 @@ export class CreateCauseComponent implements OnInit {
         amount: formValue.amount ? parseFloat(formValue.amount) : undefined,
       };
 
-      this.apiService.createCause(causeData).subscribe({
-        next: (response) => {
-          if (response.success && response.data) {
-            const newCause: Cause = {
-              causeid: response.data.causeid,
-              title: response.data.title,
-              description: response.data.description,
-              amount: response.data.amount,
-              createdat: response.data.createdat,
-            };
+      if (images.length > 0) {
+        const formData = new FormData();
+        formData.append('title', causeData.title);
+        if (causeData.description) {
+          formData.append('description', causeData.description);
+        }
+        if (causeData.amount !== undefined) {
+          formData.append('amount', String(causeData.amount));
+        }
+        images.forEach((file) => formData.append('images', file));
 
-            // Add to created causes list
-            this.createdCauses.update((causes) => [newCause, ...causes]);
-            this.lastCreatedCause.set(newCause);
-            this.showSuccess.set(true);
-
-            this.toastService.success(`Cause "${newCause.title}" created successfully!`);
-
-            // Reset form for next entry
-            this.resetForm();
-          }
-          this.loading.set(false);
-        },
-        error: (error) => {
-          this.loading.set(false);
-          // Error is handled by interceptor, but we can add specific handling here if needed
-          console.error('Error creating cause:', error);
-        },
-      });
+        this.imagesUploading.set(true);
+        this.apiService.createCauseWithImages(formData).subscribe({
+          next: (response) => {
+            if (response.success && response.data) {
+              this.handleCauseCreated(response.data);
+              this.resetImages();
+            }
+            this.imagesUploading.set(false);
+            this.loading.set(false);
+          },
+          error: (error) => {
+            this.imagesUploading.set(false);
+            this.loading.set(false);
+            console.error('Error creating cause with images:', error);
+          },
+        });
+      } else {
+        this.apiService.createCause(causeData).subscribe({
+          next: (response) => {
+            if (response.success && response.data) {
+              this.handleCauseCreated(response.data);
+            }
+            this.loading.set(false);
+          },
+          error: (error) => {
+            this.loading.set(false);
+            // Error is handled by interceptor, but we can add specific handling here if needed
+            console.error('Error creating cause:', error);
+          },
+        });
+      }
     } else {
       this.causeForm.markAllAsTouched();
     }
   }
 
+  private handleCauseCreated(data: any): void {
+    const newCause: Cause = {
+      causeid: data.causeid,
+      title: data.title,
+      description: data.description,
+      amount: data.amount,
+      createdat: data.createdat,
+    };
+
+    // Add to created causes list
+    this.createdCauses.update((causes) => [newCause, ...causes]);
+    this.lastCreatedCause.set(newCause);
+    this.showSuccess.set(true);
+
+    this.toastService.success(`Cause "${newCause.title}" created successfully!`);
+
+    // Reset form for next entry
+    this.resetForm();
+  }
+
   addAnother(): void {
     this.showSuccess.set(false);
     this.resetForm();
+    this.resetImages();
     // Focus on title input after a brief delay
     setTimeout(() => {
       const titleInput = document.querySelector('input[formControlName="title"]') as HTMLInputElement;
@@ -125,6 +169,23 @@ export class CreateCauseComponent implements OnInit {
 
   done(): void {
     this.close();
+  }
+
+  onImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files ? Array.from(input.files) : [];
+    if (files.length === 0) return;
+    this.selectedImages.update((current) => [...current, ...files]);
+    input.value = '';
+  }
+
+  clearSelectedImages(input: HTMLInputElement): void {
+    this.selectedImages.set([]);
+    input.value = '';
+  }
+
+  trackByFile(index: number, file: File): string {
+    return `${file.name}-${file.size}-${file.lastModified}`;
   }
 
   get titleError(): string {
@@ -172,4 +233,3 @@ export class CreateCauseComponent implements OnInit {
     return cause.causeid;
   }
 }
-

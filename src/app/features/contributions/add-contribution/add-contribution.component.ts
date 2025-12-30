@@ -29,6 +29,8 @@ export class AddContributionComponent implements OnInit {
   createdContributions = signal<Contribution[]>([]);
   showSuccess = signal<boolean>(false);
   lastCreatedContribution = signal<Contribution | null>(null);
+  selectedImages = signal<File[]>([]);
+  imagesUploading = signal<boolean>(false);
 
   contributionForm: FormGroup;
 
@@ -49,6 +51,7 @@ export class AddContributionComponent implements OnInit {
   open(): void {
     this.isOpen.set(true);
     this.resetForm();
+    this.resetImages();
     this.showSuccess.set(false);
     this.loadMembers();
   }
@@ -56,6 +59,7 @@ export class AddContributionComponent implements OnInit {
   close(): void {
     this.isOpen.set(false);
     this.resetForm();
+    this.resetImages();
     this.createdContributions.set([]);
     this.showSuccess.set(false);
     this.lastCreatedContribution.set(null);
@@ -69,6 +73,11 @@ export class AddContributionComponent implements OnInit {
     });
     this.contributionForm.markAsUntouched();
     this.contributionForm.markAsPristine();
+  }
+
+  resetImages(): void {
+    this.selectedImages.set([]);
+    this.imagesUploading.set(false);
   }
 
   loadMembers(): void {
@@ -103,6 +112,7 @@ export class AddContributionComponent implements OnInit {
     if (this.contributionForm.valid) {
       this.loading.set(true);
       const formValue = this.contributionForm.value;
+      const images = this.selectedImages();
 
       const contributionData: CreateContributionRequest = {
         memberId: parseInt(formValue.memberId),
@@ -110,47 +120,77 @@ export class AddContributionComponent implements OnInit {
         contributedDate: formValue.contributedDate,
       };
 
-      this.apiService.createContribution(contributionData).subscribe({
-        next: (response) => {
-          if (response.success && response.data) {
-            const newContribution: Contribution = {
-              contributionid: response.data.contributionid,
-              memberid: response.data.memberid,
-              amount: response.data.amount,
-              contributeddate: response.data.contributeddate,
-              createdat: response.data.createdat,
-            };
+      if (images.length > 0) {
+        const formData = new FormData();
+        formData.append('memberId', String(contributionData.memberId));
+        formData.append('amount', String(contributionData.amount));
+        formData.append('contributedDate', contributionData.contributedDate);
+        images.forEach((file) => formData.append('images', file));
 
-            // Add to created contributions list
-            this.createdContributions.update((contributions) => [newContribution, ...contributions]);
-            this.lastCreatedContribution.set(newContribution);
-            this.showSuccess.set(true);
-
-            // Update the contributions service
-            this.contributionsService.addContribution(newContribution);
-
-            const member = this.members().find((m) => m.memberid === newContribution.memberid);
-            const memberName = member?.name || `Member #${newContribution.memberid}`;
-            this.toastService.success(`Contribution of ₹${newContribution.amount} for ${memberName} added successfully!`);
-
-            // Reset form for next entry
-            this.resetForm();
-          }
-          this.loading.set(false);
-        },
-        error: (error) => {
-          this.loading.set(false);
-          console.error('Error creating contribution:', error);
-        },
-      });
+        this.imagesUploading.set(true);
+        this.apiService.createContributionWithImages(formData).subscribe({
+          next: (response) => {
+            if (response.success && response.data) {
+              this.handleContributionCreated(response.data);
+              this.resetImages();
+            }
+            this.imagesUploading.set(false);
+            this.loading.set(false);
+          },
+          error: (error) => {
+            this.imagesUploading.set(false);
+            this.loading.set(false);
+            console.error('Error creating contribution with images:', error);
+          },
+        });
+      } else {
+        this.apiService.createContribution(contributionData).subscribe({
+          next: (response) => {
+            if (response.success && response.data) {
+              this.handleContributionCreated(response.data);
+            }
+            this.loading.set(false);
+          },
+          error: (error) => {
+            this.loading.set(false);
+            console.error('Error creating contribution:', error);
+          },
+        });
+      }
     } else {
       this.contributionForm.markAllAsTouched();
     }
   }
 
+  private handleContributionCreated(data: any): void {
+    const newContribution: Contribution = {
+      contributionid: data.contributionid,
+      memberid: data.memberid,
+      amount: data.amount,
+      contributeddate: data.contributeddate,
+      createdat: data.createdat,
+    };
+
+    // Add to created contributions list
+    this.createdContributions.update((contributions) => [newContribution, ...contributions]);
+    this.lastCreatedContribution.set(newContribution);
+    this.showSuccess.set(true);
+
+    // Update the contributions service
+    this.contributionsService.addContribution(newContribution);
+
+    const member = this.members().find((m) => m.memberid === newContribution.memberid);
+    const memberName = member?.name || `Member #${newContribution.memberid}`;
+    this.toastService.success(`Contribution of ₹${newContribution.amount} for ${memberName} added successfully!`);
+
+    // Reset form for next entry
+    this.resetForm();
+  }
+
   addAnother(): void {
     this.showSuccess.set(false);
     this.resetForm();
+    this.resetImages();
     // Focus on member select after a brief delay
     setTimeout(() => {
       const memberSelect = document.querySelector('select[formControlName="memberId"]') as HTMLSelectElement;
@@ -162,6 +202,23 @@ export class AddContributionComponent implements OnInit {
 
   done(): void {
     this.close();
+  }
+
+  onImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files ? Array.from(input.files) : [];
+    if (files.length === 0) return;
+    this.selectedImages.update((current) => [...current, ...files]);
+    input.value = '';
+  }
+
+  clearSelectedImages(input: HTMLInputElement): void {
+    this.selectedImages.set([]);
+    input.value = '';
+  }
+
+  trackByFile(index: number, file: File): string {
+    return `${file.name}-${file.size}-${file.lastModified}`;
   }
 
   getMemberName(memberId: number): string {

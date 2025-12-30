@@ -61,6 +61,123 @@
       </div>
     </app-card>
 
+    <app-card variant="outlined" class="images-card">
+      <div class="images-header">
+        <div class="images-title">
+          <h3>Contribution Images</h3>
+          <p>Upload one or multiple images for this contribution.</p>
+        </div>
+        <div class="images-header-actions">
+          @if (canEdit) {
+            <label class="upload-btn" [class.disabled]="imagesUploading()">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                (change)="onContributionImagesSelected($event)"
+                [disabled]="imagesUploading()"
+              />
+              <i class="fas fa-upload"></i>
+              <span>{{ imagesUploading() ? 'Uploading...' : 'Upload Images' }}</span>
+            </label>
+          }
+          <button class="toggle-btn" (click)="toggleImagesExpanded()" [attr.aria-expanded]="imagesExpanded()">
+            <i class="fas" [class.fa-chevron-down]="!imagesExpanded()" [class.fa-chevron-up]="imagesExpanded()"></i>
+          </button>
+        </div>
+      </div>
+
+      @if (imagesExpanded()) {
+        @if (imagesLoading()) {
+          <div class="images-loading">Loading images...</div>
+        } @else if (images().length === 0) {
+          <div class="images-empty">No images uploaded yet.</div>
+        } @else {
+          <div class="images-grid">
+            @for (image of images(); track image.imageid; let i = $index) {
+              <div class="image-item" (click)="openImageViewer(i)">
+                <div class="image-placeholder">
+                  <i class="fas fa-image"></i>
+                </div>
+                <div class="image-details">
+                  <div class="image-title">Image {{ i + 1 }}</div>
+                  <div class="image-meta">Uploaded {{ formatDate(image.createdat) }}</div>
+                </div>
+                @if (canEdit) {
+                  <div class="image-actions">
+                    <label
+                      class="image-action-btn"
+                      [class.disabled]="replacingImageId() === image.imageid"
+                      (click)="$event.stopPropagation()"
+                    >
+                      <input
+                        type="file"
+                        accept="image/*"
+                        (change)="onReplaceContributionImage(image, $event)"
+                        [disabled]="replacingImageId() === image.imageid"
+                      />
+                      <i class="fas fa-sync-alt"></i>
+                      <span>{{ replacingImageId() === image.imageid ? 'Replacing...' : 'Replace' }}</span>
+                    </label>
+                    <button
+                      class="image-action-btn delete"
+                      (click)="$event.stopPropagation(); deleteContributionImage(image)"
+                      [disabled]="deletingImageId() === image.imageid"
+                    >
+                      <i class="fas fa-trash"></i>
+                      <span>{{ deletingImageId() === image.imageid ? 'Deleting...' : 'Delete' }}</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      }
+    </app-card>
+
+    @if (imageViewerOpen() && activeImage) {
+      <div class="image-viewer-backdrop" (click)="closeImageViewer()">
+        <div class="image-viewer" (click)="$event.stopPropagation()">
+          <button class="viewer-close" (click)="closeImageViewer()" aria-label="Close image viewer">
+            <i class="fas fa-times"></i>
+          </button>
+          <div class="viewer-content">
+            @if (images().length > 1) {
+              <button class="viewer-nav prev" (click)="prevImage()" aria-label="Previous image">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+            }
+            <div class="viewer-image">
+              @if (hasImageError(activeImage)) {
+                <div class="viewer-error">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <p>Preview unavailable. Open the image in a new tab.</p>
+                  <a class="viewer-link" [href]="activeImage.url" target="_blank" rel="noopener">
+                    Open Image
+                  </a>
+                </div>
+              } @else {
+                <img
+                  [src]="getImageUrl(activeImage.url)"
+                  [alt]="'Contribution image ' + activeImage.imageid"
+                  (error)="onViewerImageError(activeImage, $event)"
+                />
+              }
+            </div>
+            @if (images().length > 1) {
+              <button class="viewer-nav next" (click)="nextImage()" aria-label="Next image">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            }
+          </div>
+          <div class="viewer-footer">
+            {{ activeImageIndex() + 1 }} / {{ images().length }}
+          </div>
+        </div>
+      </div>
+    }
+
     <app-edit-contribution
       [contribution]="contribution()!"
       [members]="members()"
