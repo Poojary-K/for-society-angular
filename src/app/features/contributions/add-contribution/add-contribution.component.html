@@ -46,18 +46,9 @@
         @if (loadingMembers()) {
           <div class="loading-members">Loading members...</div>
         } @else {
-          <div class="member-search">
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Search members..."
-              [(ngModel)]="searchTerm"
-              [ngModelOptions]="{ standalone: true }"
-            />
-          </div>
           <select formControlName="memberId" class="form-select" [class.input-error]="memberIdError">
             <option value="">Select a member</option>
-            @for (member of filteredMembers(); track member.memberid) {
+            @for (member of members(); track member.memberid) {
               <option [value]="member.memberid">
                 {{ member.name }}
                 @if (member.email) {
@@ -121,4 +112,3 @@
     </div>
   </div>
 </div>
-

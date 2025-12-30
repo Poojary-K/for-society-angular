@@ -55,6 +55,18 @@
         />
       </div>
 
+      <!-- Created Date (admins only) -->
+      <div class="form-group" *ngIf="isAdmin">
+        <app-input
+          formControlName="createdat"
+          type="date"
+          label="Created Date"
+          placeholder="Select created date"
+          [error]="createdatError"
+        />
+        <div class="help-note">Changing this date will move the cause between donation cycles.</div>
+      </div>
+
       <!-- Form Actions -->
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" (click)="close()" [disabled]="loading()">
@@ -70,4 +82,5 @@
     </form>
   </div>
 </div>
+
 

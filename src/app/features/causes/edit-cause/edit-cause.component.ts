@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { InputComponent } from '../../../shared/components/input/input.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { Cause } from '../../../core/models';
@@ -18,6 +19,7 @@ export class EditCauseComponent {
   private fb = inject(FormBuilder);
   private apiService = inject(ApiService);
   private toastService = inject(ToastService);
+  private authService = inject(AuthService);
 
   cause = input.required<Cause>();
   isOpen = signal<boolean>(false);
@@ -32,6 +34,7 @@ export class EditCauseComponent {
       title: ['', [Validators.required, Validators.minLength(1)]],
       description: ['', [Validators.maxLength(1000)]],
       amount: [null, [Validators.min(0)]],
+      createdat: ['', []],
     });
   }
 
@@ -41,6 +44,7 @@ export class EditCauseComponent {
       title: cause.title,
       description: cause.description || '',
       amount: cause.amount ? parseFloat(cause.amount) : null,
+      createdat: cause.createdat ? new Date(cause.createdat).toISOString().slice(0, 10) : '',
     });
     this.isOpen.set(true);
   }
@@ -73,10 +77,28 @@ export class EditCauseComponent {
     return '';
   }
 
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
   get amountError(): string {
     const control = this.causeForm.get('amount');
     if (control?.hasError('min') && control?.touched) {
       return 'Amount must be greater than or equal to 0';
+    }
+    return '';
+  }
+
+  get createdatError(): string {
+    const control = this.causeForm.get('createdat');
+    const value = control?.value;
+    if (!value) return '';
+    const parts = (value || '').split('-').map((s: string) => parseInt(s, 10));
+    if (parts.length !== 3) return 'Invalid date';
+    const [y, m, d] = parts;
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    if (dt.getTime() > Date.now()) {
+      return 'Date cannot be in the future';
     }
     return '';
   }
@@ -95,6 +117,13 @@ export class EditCauseComponent {
         title: formValue.title.trim(),
         description: formValue.description?.trim() || undefined,
         amount: formValue.amount ? parseFloat(formValue.amount) : undefined,
+          createdat: (function(){
+            if (!formValue.createdat) return undefined;
+            const parts = (formValue.createdat || '').split('-').map((s: string) => parseInt(s, 10));
+            if (parts.length !== 3) return undefined;
+            const [y, m, d] = parts;
+            return new Date(Date.UTC(y, m - 1, d)).toISOString();
+          })(),
       };
 
       this.apiService.updateCause(cause.causeid, causeData).subscribe({

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { ContributionsService } from '../../../core/services/contributions.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -12,7 +12,7 @@ import { Member } from '../../../core/models/member.model';
 @Component({
   selector: 'app-add-contribution',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, InputComponent, ButtonComponent],
+  imports: [CommonModule, ReactiveFormsModule, InputComponent, ButtonComponent],
   templateUrl: './add-contribution.component.html',
   styleUrl: './add-contribution.component.scss',
 })
@@ -29,24 +29,10 @@ export class AddContributionComponent implements OnInit {
   createdContributions = signal<Contribution[]>([]);
   showSuccess = signal<boolean>(false);
   lastCreatedContribution = signal<Contribution | null>(null);
-  searchTerm = signal<string>('');
 
   contributionForm: FormGroup;
 
   canAddAnother = computed(() => this.createdContributions().length > 0);
-
-  filteredMembers = computed(() => {
-    const search = this.searchTerm().toLowerCase();
-    if (!search) {
-      return this.members();
-    }
-    return this.members().filter(
-      (member) =>
-        member.name.toLowerCase().includes(search) ||
-        member.email?.toLowerCase().includes(search) ||
-        member.phone?.toLowerCase().includes(search)
-    );
-  });
 
   constructor() {
     this.contributionForm = this.fb.group({
@@ -73,7 +59,6 @@ export class AddContributionComponent implements OnInit {
     this.createdContributions.set([]);
     this.showSuccess.set(false);
     this.lastCreatedContribution.set(null);
-    this.searchTerm.set('');
   }
 
   resetForm(): void {
@@ -221,4 +206,3 @@ export class AddContributionComponent implements OnInit {
     return contribution.contributionid;
   }
 }
-

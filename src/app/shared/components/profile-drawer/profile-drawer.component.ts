@@ -4,6 +4,7 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { ContributionsService } from '../../../core/services/contributions.service';
+import { RANKING_COLORS, RANKING_LABELS } from '../../configs/ranking.config';
 import { Contribution } from '../../../core/models/contribution.model';
 
 @Component({
@@ -33,6 +34,49 @@ export class ProfileDrawerComponent implements OnInit, OnDestroy {
     return userContributions.reduce((total, contrib) => {
       return total + parseFloat(contrib.amount || '0');
     }, 0);
+  });
+
+  userRank = computed(() => {
+    const currentUser = this.currentUser();
+    if (!currentUser) return null;
+
+    const contributions = this.contributions();
+    if (!contributions || contributions.length === 0) return null;
+
+    // Sum contributions per member
+    const totals = new Map<number, number>();
+    contributions.forEach((c) => {
+      const mid = c.memberid;
+      const amt = parseFloat(c.amount || '0');
+      totals.set(mid, (totals.get(mid) || 0) + amt);
+    });
+
+    // Build sorted list
+    const list = Array.from(totals.entries()).map(([memberid, total]) => ({ memberid, total }));
+    list.sort((a, b) => b.total - a.total);
+
+    const idx = list.findIndex((l) => l.memberid === currentUser.memberId);
+    if (idx === -1) return null;
+
+    const rank = idx + 1;
+    const totalMembers = list.length;
+    const percentile = (rank / totalMembers) * 100;
+
+    let key = '';
+    if (rank === 1) key = 'gold';
+    else if (rank === 2) key = 'silver';
+    else if (rank === 3) key = 'bronze';
+    else if (rank <= 5) key = 'top5';
+    else if (percentile <= 10) key = 'top10';
+    else if (percentile <= 50) key = 'top50';
+    else return null;
+
+    return {
+      label: RANKING_LABELS[key] || `${rank}`,
+      color: RANKING_COLORS[key] || '#6b7280',
+      rank,
+      percentile: Math.round(percentile),
+    };
   });
 
   contributionCount = computed(() => {

@@ -85,21 +85,23 @@
   gap: 0.75rem;
 }
 
-.admin-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  background: #7c3aed;
-  color: white;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
 .user-avatar-btn {
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
+}
+
+.user-avatar-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+
+  &.admin .user-avatar {
+    box-shadow: 0 0 0 2px #7c3aed;
+  }
 }
 
 .user-avatar {
@@ -120,6 +122,23 @@
   }
 }
 
+.admin-indicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #7c3aed;
+  color: #ffffff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+}
+
 .login-btn {
   padding: 0.5rem 1rem;
   background: #2563eb;
@@ -135,4 +154,3 @@
     background: #1d4ed8;
   }
 }
-

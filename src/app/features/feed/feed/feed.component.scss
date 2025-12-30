@@ -124,30 +124,138 @@
   gap: 16px;
 }
 
+/* Summary card */
+.feed-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+
+  .summary-grid {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .cycle-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    .stat-label {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .stat-sub {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.muted {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.compare-bar {
+  margin-top: 12px;
+
+  .bar {
+    height: 10px;
+    background: #f3f4f6;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .bar-contrib {
+    background: #10b981; /* green */
+  }
+
+  .bar-donation {
+    background: #7c3aed; /* purple */
+  }
+
+  .bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+}
+
 .cause-card,
 .contribution-card {
+  transition: all 0.3s ease;
+  position: relative;
   padding: 20px;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+
+  .cause-content {
+    cursor: pointer;
+  }
+}
+
+/* Collapse behavior */
+.causes-list.collapsed {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+
+.contributions-list {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.contributions-list:not(.visible) {
+  opacity: 1;
+}
+
+/* When toggled to show contributions only, we can optionally add spacing */
+.contributions-list.visible {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .cause-title {
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin: 0 0 0.75rem 0;
   color: #111827;
+  line-height: 1.4;
 }
 
 .cause-description {
-  font-size: 16px;
+  font-size: 0.9375rem;
   color: #6b7280;
-  margin-bottom: 12px;
   line-height: 1.6;
+  margin: 0 0 1rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .cause-amount {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 700;
   color: #2563eb;
-  margin-bottom: 8px;
+  white-space: nowrap;
 }
 
 .cause-date,
@@ -218,9 +326,9 @@
 }
 
 .contribution-card {
-  padding: 20px;
-  background-color: #ffffff !important; // Ensure white background
-  border: 1px solid #e5e7eb; // Add border for better visibility
+  padding: 12px 0; // remove inner white block padding
+  background-color: transparent !important; // remove white background block
+  border: none; // remove border
   position: relative;
   
   // Make sure all text is visible
@@ -230,6 +338,10 @@
 
   .contribution-content {
     cursor: pointer;
+    background: #ffffff; /* keep the inner content card white */
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
   }
 }
 
@@ -237,6 +349,71 @@
   display: flex;
   gap: 6px;
   align-items: center;
+}
+
+/* Cause footer layout to match causes view: date on left, actions on right */
+.cause-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+  gap: 1rem;
+
+  .cause-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+    flex: 1;
+
+    i {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Action button style copied from causes view to ensure consistency
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.edit-btn {
+    background-color: #f3f4f6;
+    color: #2563eb;
+
+    &:hover {
+      background-color: #2563eb;
+      color: #ffffff;
+    }
+  }
+
+  &.delete-btn {
+    background-color: #fef2f2;
+    color: #ef4444;
+
+    &:hover {
+      background-color: #ef4444;
+      color: #ffffff;
+    }
+  }
 }
 
 .action-btn {

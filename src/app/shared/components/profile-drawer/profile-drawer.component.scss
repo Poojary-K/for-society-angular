@@ -126,6 +126,16 @@
   margin: 0.5rem 0;
 }
 
+.rank-pill {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  color: #ffffff;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
 .user-joined {
   font-size: 0.75rem;
   color: #9ca3af;
@@ -279,4 +289,5 @@
     max-width: 100%;
   }
 }
+
 

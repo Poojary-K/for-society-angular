@@ -31,10 +31,6 @@ export class ContributionsViewComponent implements OnInit, OnDestroy {
   filterDateFrom = signal<string>('');
   filterDateTo = signal<string>('');
 
-  get currentUser() {
-    return this.authService.currentUser();
-  }
-
   get isAdmin(): boolean {
     return this.authService.isAdmin();
   }
@@ -76,11 +72,7 @@ export class ContributionsViewComponent implements OnInit, OnDestroy {
     this.contributionsService.getContributions().subscribe();
 
     const contributionsSub = this.contributionsService.contributions$.subscribe((contributions) => {
-      if (this.isAdmin) {
-        this.contributions.set(contributions);
-      } else {
-        this.contributions.set(contributions.filter(c => c.memberid === this.currentUser?.memberId));
-      }
+      this.contributions.set(contributions);
     });
     this.subscriptions.add(contributionsSub);
 
@@ -89,17 +81,15 @@ export class ContributionsViewComponent implements OnInit, OnDestroy {
     });
     this.subscriptions.add(loadingSub);
 
-    // Load members if admin (for displaying member names)
-    if (this.isAdmin) {
-      const membersSub = this.apiService.getMembers().subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.members.set(response.data.members);
-          }
+    // Load members for displaying member names in the list and search
+    const membersSub = this.apiService.getMembers().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.members.set(response.data.members);
         }
-      });
-      this.subscriptions.add(membersSub);
-    }
+      }
+    });
+    this.subscriptions.add(membersSub);
   }
 
   ngOnDestroy(): void {

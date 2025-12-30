@@ -80,6 +80,39 @@
   }
 }
 
+.fund-chart-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+.cycle-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.cycle-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.cycle-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.cycle-range {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
 .fund-metrics {
   display: flex;
   flex-direction: column;
@@ -250,4 +283,3 @@
   border-top: 1px solid #e5e7eb;
   z-index: 1;
 }
-

@@ -12,6 +12,13 @@
           [totalDonations]="parseFloat(fundStatus.totaldonations || '0')"
           [availableFunds]="parseFloat(fundStatus.availablefunds || '0')"
         />
+        @if (currentCycleTotal !== null) {
+          <div class="cycle-summary">
+            <div class="cycle-label">Current cycle donation</div>
+            <div class="cycle-value">₹{{ currentCycleTotal | number:'1.0-2' }}</div>
+            <div class="cycle-range">{{ currentCycleLabel }}</div>
+          </div>
+        }
       </app-card>
     }
 
@@ -57,4 +64,3 @@
     </section>
   }
 </div>
-

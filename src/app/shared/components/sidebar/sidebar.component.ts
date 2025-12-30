@@ -54,7 +54,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       requiresAuth: false,
     },
     {
-      label: 'My Contributions',
+      label: 'All Contributions',
       route: '/contributions',
       icon: 'fa-hand-holding-dollar',
       requiresAuth: true,

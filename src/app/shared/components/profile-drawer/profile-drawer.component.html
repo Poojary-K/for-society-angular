@@ -21,6 +21,12 @@
       <p class="user-email" *ngIf="currentUser()?.email">{{ currentUser()?.email }}</p>
       <p class="user-phone" *ngIf="currentUser()?.phone">{{ currentUser()?.phone }}</p>
       <span class="user-badge" *ngIf="currentUser()?.isAdmin">Admin</span>
+      <span
+        class="rank-pill"
+        *ngIf="userRank()"
+        [ngStyle]="{ 'background': userRank()?.color }"
+        >{{ userRank()?.label }}</span
+      >
       <p class="user-joined">
         Joined: {{ formatDate(currentUser()?.joinedOn || '') }}
       </p>
@@ -83,4 +89,5 @@
     </div>
   </div>
 </div>
+
 

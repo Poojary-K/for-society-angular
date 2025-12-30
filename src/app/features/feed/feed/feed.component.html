@@ -1,18 +1,91 @@
 <div class="feed-page">
   <!-- Feed Content -->
   <div class="feed-content">
+    <!-- Summary / Visualization -->
+    <app-card variant="elevated" class="feed-summary-card">
+      <h3 class="card-title">This Cycle</h3>
+      <div class="summary-grid">
+        <div class="cycle-stats">
+          <div class="stat-label">Contributions</div>
+          <div class="stat-value">₹{{ getCurrentCycleTotal() | number:'1.0-2' }}</div>
+          <div class="stat-sub">{{ getCurrentCycleContributions().length }} contributions</div>
+        </div>
+
+        <div class="cycle-stats">
+          <div class="stat-label">Donations</div>
+          <div class="stat-value">₹{{ donationsAmount() | number:'1.0-2' }}</div>
+          <div class="stat-sub">Donations this cycle (computed)</div>
+        </div>
+      </div>
+
+      @if (hasDonationsData()) {
+        <div class="compare-bar">
+          <div class="bar">
+            <div class="bar-contrib" style="width: {{ getComparePercent() }}%"></div>
+            <div class="bar-donation" style="width: {{ 100 - getComparePercent() }}%"></div>
+          </div>
+          <div class="bar-labels">
+            <span class="label-contrib">Contrib: ₹{{ getCurrentCycleTotal() | number:'1.0-2' }}</span>
+            <span class="label-donate">Donate: ₹{{ donationsAmount() | number:'1.0-2' }} <span class="muted" *ngIf="donationsAllTime">(all time)</span></span>
+          </div>
+        </div>
+      }
+    </app-card>
     <!-- Recent Contributions -->
-    <div class="section-header">
-      <h3 class="section-title">Recent Contributions</h3>
-    </div>
-    @if (loading) {
-      <div class="loading-state">Loading contributions...</div>
-    } @else if (contributions.length === 0) {
+      <div class="section-header">
+        <h3 class="section-title">Current Cycle Causes</h3>
+      </div>
+      @if (getCurrentCycleCauses().length === 0) {
+        <app-card variant="outlined" class="empty-card">
+          <p class="empty-message">No causes this cycle.</p>
+        </app-card>
+      } @else {
+        <div class="causes-list" [class.collapsed]="showContributionsOnly()">
+          @for (cause of getCurrentCycleCauses(); track cause.causeid) {
+            <app-card variant="elevated" class="cause-card" [clickable]="true">
+              <div class="cause-content" (click)="viewCause(cause)">
+                <div class="cause-header">
+                  <h3 class="cause-title">{{ cause.title }}</h3>
+                  @if (cause.amount) {
+                    <div class="cause-amount">{{ formatAmount(cause.amount) }}</div>
+                  }
+                </div>
+                @if (cause.description) {
+                  <p class="cause-description">{{ cause.description }}</p>
+                }
+                <div class="cause-footer">
+                  <div class="cause-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Created {{ formatDate(cause.createdat) }}</span>
+                  </div>
+                  @if (isAdmin) {
+                    <div class="card-actions">
+                      <button class="action-btn edit-btn" (click)="editCause(cause, $event)" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="action-btn delete-btn" (click)="deleteCause(cause, $event)" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            </app-card>
+          }
+        </div>
+      }
+
+      <div class="section-header">
+        <h3 class="section-title">Recent Contributions</h3>
+      </div>
+      @if (loading) {
+        <div class="loading-state">Loading contributions...</div>
+      } @else if (getCurrentCycleContributions().length === 0) {
       <app-card variant="outlined" class="empty-card">
         <p class="empty-message">No contributions yet.</p>
       </app-card>
     } @else {
-      <div class="contributions-list">
+      <div class="contributions-list" [class.visible]="showContributionsOnly()">
         @for (contribution of getDisplayedContributions(); track contribution.contributionid) {
           <app-card variant="elevated" class="contribution-card" [clickable]="true">
             <div class="contribution-content" (click)="viewContribution(contribution)">
@@ -47,22 +120,7 @@
         }
       </div>
 
-      <!-- Show All / Show Less Button -->
-      @if (contributions.length > 10) {
-        <div class="show-all-container">
-          @if (!showAllContributions()) {
-            <button class="show-all-btn" (click)="showAll()">
-              <span>Show All Contributions</span>
-              <i class="fas fa-chevron-down"></i>
-            </button>
-          } @else {
-            <button class="show-all-btn" (click)="showLess()">
-              <span>Show Less</span>
-              <i class="fas fa-chevron-up"></i>
-            </button>
-          }
-        </div>
-      }
+      <!-- show-more removed per request -->
     }
   </div>
 

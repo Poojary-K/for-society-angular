@@ -11,13 +11,15 @@
     <!-- Right Side Actions -->
     <div class="header-actions">
       @if (isAuthenticated()) {
-        @if (isAdmin()) {
-          <span class="admin-badge">Admin</span>
-        }
         <button class="user-avatar-btn" (click)="router.navigate(['/profile'])" aria-label="View profile">
-          <div class="user-avatar">
-            {{ getAvatarInitial() }}
-          </div>
+          <span class="user-avatar-wrapper" [class.admin]="isAdmin()">
+            <span class="user-avatar">
+              {{ getAvatarInitial() }}
+            </span>
+            @if (isAdmin()) {
+              <span class="admin-indicator" aria-hidden="true">A</span>
+            }
+          </span>
         </button>
       } @else {
         <button class="login-btn" (click)="navigateToLogin()">Login</button>
