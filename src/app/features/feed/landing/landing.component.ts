@@ -7,7 +7,7 @@ import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { ScrollAnimationDirective } from '../../../shared/directives/scroll-animation.directive';
 import { PieChartComponent } from '../../../shared/components/pie-chart/pie-chart.component';
-import { Cause, Contribution } from '../../../core/models';
+import { Cause, CauseImage, Contribution } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -23,6 +23,12 @@ export class LandingComponent implements OnInit {
   private router = inject(Router);
 
   causes: Cause[] = [];
+  causeImages = new Map<number, CauseImage[]>();
+  private failedCauseImages = new Set<number>();
+  private failedViewerImages = new Set<string>();
+  causeViewerOpen = false;
+  activeCauseId: number | null = null;
+  activeImageIndex = 0;
   fundStatus: any = null;
   loading = true;
   currentCycleTotal: number | null = null;
@@ -43,6 +49,10 @@ export class LandingComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.causes = response.data.causes;
+          this.causeImages.clear();
+          this.failedCauseImages.clear();
+          this.failedViewerImages.clear();
+          this.loadCauseImages(this.causes);
         }
         this.loading = false;
       },
@@ -94,6 +104,94 @@ export class LandingComponent implements OnInit {
     });
   }
 
+  getCauseImageUrl(causeId: number): string | null {
+    const images = this.causeImages.get(causeId) || [];
+    return images[0]?.url || null;
+  }
+
+  isCauseImageFailed(causeId: number): boolean {
+    return this.failedCauseImages.has(causeId);
+  }
+
+  onCauseImageError(causeId: number, event: Event): void {
+    const target = event.target as HTMLImageElement;
+    const sourceUrl = this.getCauseImageUrl(causeId) || '';
+    const fileId = this.getDriveFileId(sourceUrl);
+    const exportUrl = fileId ? this.getImageUrl(sourceUrl) : null;
+    const fallbackUrl = fileId ? this.getImageFallbackUrl(sourceUrl) : null;
+    const stage = target.dataset['fallbackStage'] || '';
+
+    if (exportUrl && stage !== 'export' && target.src !== exportUrl) {
+      target.dataset['fallbackStage'] = 'export';
+      target.src = exportUrl;
+      return;
+    }
+
+    if (fallbackUrl && stage !== 'thumb' && target.src !== fallbackUrl) {
+      target.dataset['fallbackStage'] = 'thumb';
+      target.src = fallbackUrl;
+      return;
+    }
+    this.failedCauseImages.add(causeId);
+  }
+
+  openCauseViewer(causeId: number, index: number = 0): void {
+    const images = this.causeImages.get(causeId) || [];
+    if (images.length === 0) return;
+    const safeIndex = Math.max(0, Math.min(index, images.length - 1));
+    this.activeCauseId = causeId;
+    this.activeImageIndex = safeIndex;
+    this.causeViewerOpen = true;
+  }
+
+  closeCauseViewer(): void {
+    this.causeViewerOpen = false;
+  }
+
+  nextCauseImage(): void {
+    const images = this.getActiveCauseImages();
+    if (images.length === 0) return;
+    this.activeImageIndex = (this.activeImageIndex + 1) % images.length;
+  }
+
+  prevCauseImage(): void {
+    const images = this.getActiveCauseImages();
+    if (images.length === 0) return;
+    this.activeImageIndex = (this.activeImageIndex - 1 + images.length) % images.length;
+  }
+
+  get activeCauseImage(): CauseImage | null {
+    const images = this.getActiveCauseImages();
+    return images[this.activeImageIndex] || null;
+  }
+
+  hasViewerImageError(image: CauseImage): boolean {
+    return this.failedViewerImages.has(this.getViewerKey(image));
+  }
+
+  onViewerImageError(image: CauseImage, event: Event): void {
+    const target = event.target as HTMLImageElement;
+    const sourceUrl = image.url;
+    const fileId = this.getDriveFileId(sourceUrl);
+    const exportUrl = fileId ? this.getImageUrl(sourceUrl) : null;
+    const fallbackUrl = fileId ? this.getImageFallbackUrl(sourceUrl) : null;
+    const stage = target.dataset['fallbackStage'] || '';
+
+    if (exportUrl && stage !== 'export' && target.src !== exportUrl) {
+      target.dataset['fallbackStage'] = 'export';
+      target.src = exportUrl;
+      return;
+    }
+
+    if (fallbackUrl && stage !== 'thumb' && target.src !== fallbackUrl) {
+      target.dataset['fallbackStage'] = 'thumb';
+      target.src = fallbackUrl;
+      return;
+    }
+
+    this.failedViewerImages.add(this.getViewerKey(image));
+  }
+
   parseFloat(value: string): number {
     return parseFloat(value);
   }
@@ -107,6 +205,49 @@ export class LandingComponent implements OnInit {
         return contribDate ? this.isWithinRange(contribDate, start, end) : false;
       })
       .reduce((sum, contribution) => sum + parseFloat(contribution.amount), 0);
+  }
+
+  private loadCauseImages(causes: Cause[]): void {
+    causes.forEach((cause) => {
+      this.apiService.getCauseImages(cause.causeid).subscribe({
+        next: (response) => {
+          if (response.success) {
+            const images = (response.data.images || []) as CauseImage[];
+            this.causeImages.set(cause.causeid, images);
+          }
+        },
+      });
+    });
+  }
+
+  getActiveCauseImages(): CauseImage[] {
+    if (this.activeCauseId === null) return [];
+    return this.causeImages.get(this.activeCauseId) || [];
+  }
+
+  private getViewerKey(image: CauseImage): string {
+    return `${image.causeid}:${image.imageid}`;
+  }
+
+  private getImageUrl(url: string): string {
+    const fileId = this.getDriveFileId(url);
+    if (!fileId) return url;
+    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  }
+
+  private getImageFallbackUrl(url: string): string | null {
+    const fileId = this.getDriveFileId(url);
+    if (!fileId) return null;
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w1200`;
+  }
+
+  private getDriveFileId(url: string): string | null {
+    if (!url || !url.includes('drive.google.com')) return null;
+    const idMatch = url.match(/id=([^&]+)/);
+    if (idMatch) return idMatch[1];
+    const pathMatch = url.match(/\/d\/([^/]+)/);
+    if (pathMatch) return pathMatch[1];
+    return null;
   }
 
   private parseDateInput(value: string): Date | null {

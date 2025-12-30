@@ -412,6 +412,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  z-index: 5;
 }
 
 .viewer-content {
@@ -420,6 +421,8 @@
   align-items: center;
   gap: 1rem;
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .viewer-image {

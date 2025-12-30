@@ -1,4 +1,4 @@
-<div class="landing-page">
+<div class="landing-page" [class.viewer-open]="causeViewerOpen">
   <!-- Hero Section -->
   <section class="hero-section">
     <h2 class="hero-title">Together We Make a Difference</h2>
@@ -41,14 +41,33 @@
       <div class="causes-list">
         @for (cause of causes; track cause.causeid) {
           <app-card variant="elevated" class="cause-card" [clickable]="true" appScrollAnimation>
-            <h4 class="cause-title">{{ cause.title }}</h4>
-            @if (cause.description) {
-              <p class="cause-description">{{ cause.description }}</p>
-            }
-            @if (cause.amount) {
-              <div class="cause-amount">Target: ₹{{ cause.amount }}</div>
-            }
-            <div class="cause-date">{{ formatDate(cause.createdat) }}</div>
+            <div
+              class="cause-media"
+              [class.clickable]="getCauseImageUrl(cause.causeid)"
+              (click)="openCauseViewer(cause.causeid)"
+            >
+              @if (getCauseImageUrl(cause.causeid) && !isCauseImageFailed(cause.causeid)) {
+                <img
+                  [src]="getCauseImageUrl(cause.causeid)!"
+                  [alt]="cause.title"
+                  (error)="onCauseImageError(cause.causeid, $event)"
+                />
+              } @else {
+                <div class="cause-placeholder">
+                  <i class="fas fa-image"></i>
+                </div>
+              }
+            </div>
+            <div class="cause-content">
+              <h4 class="cause-title">{{ cause.title }}</h4>
+              @if (cause.description) {
+                <p class="cause-description">{{ cause.description }}</p>
+              }
+              @if (cause.amount) {
+                <div class="cause-amount">Target: ₹{{ cause.amount }}</div>
+              }
+              <div class="cause-date">{{ formatDate(cause.createdat) }}</div>
+            </div>
           </app-card>
         }
       </div>
@@ -62,5 +81,47 @@
         Join Us Today
       </app-button>
     </section>
+  }
+
+  @if (causeViewerOpen && activeCauseImage) {
+    <div class="image-viewer-backdrop" (click)="closeCauseViewer()">
+      <div class="image-viewer" (click)="$event.stopPropagation()">
+        <button class="viewer-close" (click)="closeCauseViewer()" aria-label="Close image viewer">
+          <i class="fas fa-times"></i>
+        </button>
+        <div class="viewer-content">
+          @if (getActiveCauseImages().length > 1) {
+            <button class="viewer-nav prev" (click)="prevCauseImage()" aria-label="Previous image">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+          }
+          <div class="viewer-image">
+            @if (hasViewerImageError(activeCauseImage)) {
+              <div class="viewer-error">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>Preview unavailable. Open the image in a new tab.</p>
+                <a class="viewer-link" [href]="activeCauseImage.url" target="_blank" rel="noopener">
+                  Open Image
+                </a>
+              </div>
+            } @else {
+              <img
+                [src]="activeCauseImage.url"
+                [alt]="activeCauseImage.imageid ? 'Cause image ' + activeCauseImage.imageid : 'Cause image'"
+                (error)="onViewerImageError(activeCauseImage, $event)"
+              />
+            }
+          </div>
+          @if (getActiveCauseImages().length > 1) {
+            <button class="viewer-nav next" (click)="nextCauseImage()" aria-label="Next image">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          }
+        </div>
+        <div class="viewer-footer">
+          {{ activeImageIndex + 1 }} / {{ getActiveCauseImages().length }}
+        </div>
+      </div>
+    </div>
   }
 </div>

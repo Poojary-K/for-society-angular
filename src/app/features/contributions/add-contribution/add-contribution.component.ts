@@ -8,6 +8,7 @@ import { InputComponent } from '../../../shared/components/input/input.component
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { CreateContributionRequest, Contribution } from '../../../core/models/contribution.model';
 import { Member } from '../../../core/models/member.model';
+import { compressImages } from '../../../shared/utils/image-compress';
 
 @Component({
   selector: 'app-add-contribution',
@@ -103,7 +104,7 @@ export class AddContributionComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     // Prevent duplicate submissions
     if (this.loading()) {
       return;
@@ -125,9 +126,10 @@ export class AddContributionComponent implements OnInit {
         formData.append('memberId', String(contributionData.memberId));
         formData.append('amount', String(contributionData.amount));
         formData.append('contributedDate', contributionData.contributedDate);
-        images.forEach((file) => formData.append('images', file));
-
         this.imagesUploading.set(true);
+        const compressedImages = await compressImages(images, { quality: 0.5 });
+        compressedImages.forEach((file) => formData.append('images', file));
+
         this.apiService.createContributionWithImages(formData).subscribe({
           next: (response) => {
             if (response.success && response.data) {

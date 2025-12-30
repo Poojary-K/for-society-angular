@@ -9,6 +9,7 @@ import { ButtonComponent } from '../../../shared/components/button/button.compon
 import { EditContributionComponent } from '../edit-contribution/edit-contribution.component';
 import { ContributionsService } from '../../../core/services/contributions.service';
 import { Contribution, ContributionImage, Member } from '../../../core/models';
+import { compressImages } from '../../../shared/utils/image-compress';
 
 @Component({
   selector: 'app-contribution-detail',
@@ -155,9 +156,19 @@ export class ContributionDetailComponent implements OnInit {
 
   onViewerImageError(image: ContributionImage, event: Event): void {
     const target = event.target as HTMLImageElement;
-    const fallbackUrl = this.getImageFallbackUrl(image.url);
-    if (fallbackUrl && !target.dataset['fallbackApplied']) {
-      target.dataset['fallbackApplied'] = 'true';
+    const fileId = this.getDriveFileId(image.url);
+    const exportUrl = fileId ? this.getImageUrl(image.url) : null;
+    const fallbackUrl = fileId ? this.getImageFallbackUrl(image.url) : null;
+    const stage = target.dataset['fallbackStage'] || '';
+
+    if (exportUrl && stage !== 'export' && target.src !== exportUrl) {
+      target.dataset['fallbackStage'] = 'export';
+      target.src = exportUrl;
+      return;
+    }
+
+    if (fallbackUrl && stage !== 'thumb' && target.src !== fallbackUrl) {
+      target.dataset['fallbackStage'] = 'thumb';
       target.src = fallbackUrl;
       return;
     }
@@ -290,7 +301,7 @@ export class ContributionDetailComponent implements OnInit {
     }
   }
 
-  onContributionImagesSelected(event: Event): void {
+  async onContributionImagesSelected(event: Event): Promise<void> {
     const contribution = this.contribution();
     if (!contribution) return;
 
@@ -299,7 +310,8 @@ export class ContributionDetailComponent implements OnInit {
     if (files.length === 0) return;
 
     this.imagesUploading.set(true);
-    this.apiService.uploadContributionImages(contribution.contributionid, files).subscribe({
+    const compressedImages = await compressImages(files, { quality: 0.5 });
+    this.apiService.uploadContributionImages(contribution.contributionid, compressedImages).subscribe({
       next: (response) => {
         if (response.success) {
           const newImages = response.data.images || [];
@@ -319,7 +331,7 @@ export class ContributionDetailComponent implements OnInit {
     input.value = '';
   }
 
-  onReplaceContributionImage(image: ContributionImage, event: Event): void {
+  async onReplaceContributionImage(image: ContributionImage, event: Event): Promise<void> {
     const contribution = this.contribution();
     if (!contribution) return;
 
@@ -328,7 +340,8 @@ export class ContributionDetailComponent implements OnInit {
     if (!file) return;
 
     this.replacingImageId.set(image.imageid);
-    this.apiService.replaceContributionImage(contribution.contributionid, image.imageid, file).subscribe({
+    const [compressed] = await compressImages([file], { quality: 0.5 });
+    this.apiService.replaceContributionImage(contribution.contributionid, image.imageid, compressed || file).subscribe({
       next: (response) => {
         if (response.success) {
           const updated = response.data;

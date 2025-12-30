@@ -159,7 +159,7 @@
                 </div>
               } @else {
                 <img
-                  [src]="getImageUrl(activeImage.url)"
+                  [src]="activeImage.url"
                   [alt]="'Contribution image ' + activeImage.imageid"
                   (error)="onViewerImageError(activeImage, $event)"
                 />

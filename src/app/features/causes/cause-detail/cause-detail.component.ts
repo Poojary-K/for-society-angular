@@ -8,6 +8,7 @@ import { CardComponent } from '../../../shared/components/card/card.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { EditCauseComponent } from '../edit-cause/edit-cause.component';
 import { Cause, CauseImage } from '../../../core/models';
+import { compressImages } from '../../../shared/utils/image-compress';
 
 @Component({
   selector: 'app-cause-detail',
@@ -136,9 +137,19 @@ export class CauseDetailComponent implements OnInit {
 
   onViewerImageError(image: CauseImage, event: Event): void {
     const target = event.target as HTMLImageElement;
-    const fallbackUrl = this.getImageFallbackUrl(image.url);
-    if (fallbackUrl && !target.dataset['fallbackApplied']) {
-      target.dataset['fallbackApplied'] = 'true';
+    const fileId = this.getDriveFileId(image.url);
+    const exportUrl = fileId ? this.getImageUrl(image.url) : null;
+    const fallbackUrl = fileId ? this.getImageFallbackUrl(image.url) : null;
+    const stage = target.dataset['fallbackStage'] || '';
+
+    if (exportUrl && stage !== 'export' && target.src !== exportUrl) {
+      target.dataset['fallbackStage'] = 'export';
+      target.src = exportUrl;
+      return;
+    }
+
+    if (fallbackUrl && stage !== 'thumb' && target.src !== fallbackUrl) {
+      target.dataset['fallbackStage'] = 'thumb';
       target.src = fallbackUrl;
       return;
     }
@@ -205,7 +216,7 @@ export class CauseDetailComponent implements OnInit {
     }
   }
 
-  onCauseImagesSelected(event: Event): void {
+  async onCauseImagesSelected(event: Event): Promise<void> {
     const cause = this.cause();
     if (!cause) return;
 
@@ -214,7 +225,8 @@ export class CauseDetailComponent implements OnInit {
     if (files.length === 0) return;
 
     this.imagesUploading.set(true);
-    this.apiService.uploadCauseImages(cause.causeid, files).subscribe({
+    const compressedImages = await compressImages(files, { quality: 0.5 });
+    this.apiService.uploadCauseImages(cause.causeid, compressedImages).subscribe({
       next: (response) => {
         if (response.success) {
           const newImages = response.data.images || [];
@@ -234,7 +246,7 @@ export class CauseDetailComponent implements OnInit {
     input.value = '';
   }
 
-  onReplaceCauseImage(image: CauseImage, event: Event): void {
+  async onReplaceCauseImage(image: CauseImage, event: Event): Promise<void> {
     const cause = this.cause();
     if (!cause) return;
 
@@ -243,7 +255,8 @@ export class CauseDetailComponent implements OnInit {
     if (!file) return;
 
     this.replacingImageId.set(image.imageid);
-    this.apiService.replaceCauseImage(cause.causeid, image.imageid, file).subscribe({
+    const [compressed] = await compressImages([file], { quality: 0.5 });
+    this.apiService.replaceCauseImage(cause.causeid, image.imageid, compressed || file).subscribe({
       next: (response) => {
         if (response.success) {
           const updated = response.data;

@@ -6,6 +6,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { InputComponent } from '../../../shared/components/input/input.component';
 import { ButtonComponent } from '../../../shared/components/button/button.component';
 import { CreateCauseRequest, Cause } from '../../../core/models/cause.model';
+import { compressImages } from '../../../shared/utils/image-compress';
 
 @Component({
   selector: 'app-create-cause',
@@ -70,7 +71,7 @@ export class CreateCauseComponent implements OnInit {
     this.imagesUploading.set(false);
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     // Prevent duplicate submissions
     if (this.loading()) {
       return;
@@ -96,9 +97,10 @@ export class CreateCauseComponent implements OnInit {
         if (causeData.amount !== undefined) {
           formData.append('amount', String(causeData.amount));
         }
-        images.forEach((file) => formData.append('images', file));
-
         this.imagesUploading.set(true);
+        const compressedImages = await compressImages(images, { quality: 0.5 });
+        compressedImages.forEach((file) => formData.append('images', file));
+
         this.apiService.createCauseWithImages(formData).subscribe({
           next: (response) => {
             if (response.success && response.data) {
