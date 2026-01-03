@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
@@ -24,6 +24,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private authService = inject(AuthService);
   private sidebarService = inject(SidebarService);
+  private elementRef = inject(ElementRef);
 
   isOpen = signal<boolean>(false);
   currentRoute = signal<string>('');
@@ -97,6 +98,26 @@ export class SidebarComponent implements OnInit, OnDestroy {
   onResize(): void {
     this.checkScreenSize();
     this.setInitialSidebarState();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.isOpen() || !this.isMobile()) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (!target) {
+      return;
+    }
+
+    if (target.closest('[data-sidebar-toggle]')) {
+      return;
+    }
+
+    if (!this.elementRef.nativeElement.contains(target)) {
+      this.closeSidebar();
+    }
   }
 
   private checkScreenSize(): void {

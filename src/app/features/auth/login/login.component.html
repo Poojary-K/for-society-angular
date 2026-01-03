@@ -35,10 +35,28 @@
         </app-button>
       </form>
 
+      @if (emailNotVerified) {
+        <div class="verify-panel">
+          <p class="verify-title">Email not verified</p>
+          <p class="verify-text">Please check your inbox and verify your email to continue.</p>
+          <app-button
+            type="secondary"
+            [fullWidth]="true"
+            [loading]="resendLoading"
+            [disabled]="loginForm.get('email')?.invalid ?? false"
+            (click)="resendVerification()"
+          >
+            Resend verification email
+          </app-button>
+          @if (resendMessage) {
+            <p class="verify-message">{{ resendMessage }}</p>
+          }
+        </div>
+      }
+
       <div class="login-footer">
         <p>Don't have an account? <a (click)="navigateToRegister()">Create account</a></p>
       </div>
     </div>
   </div>
 </div>
-

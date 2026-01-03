@@ -1,4 +1,4 @@
-.register-overlay {
+.verify-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -14,45 +14,20 @@
   padding: 16px;
 }
 
-.register-modal {
+.verify-modal {
   background-color: #ffffff;
   border-radius: 16px;
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
   position: relative;
   animation: slideUp 0.3s ease-out;
   max-height: 90vh;
   overflow-y: auto;
 }
 
-.close-button {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 32px;
-  line-height: 1;
-  cursor: pointer;
-  color: #6b7280;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #f3f4f6;
-    color: #111827;
-  }
-}
-
-.register-content {
+.verify-content {
   padding: 32px 24px;
-  
-  // Ensure labels are visible
+
   label, .input-label, app-input label, app-input .input-label {
     color: #111827 !important;
     opacity: 1 !important;
@@ -61,7 +36,7 @@
   }
 }
 
-.register-title {
+.verify-title {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 8px;
@@ -69,20 +44,14 @@
   text-align: center;
 }
 
-.register-subtitle {
+.verify-subtitle {
   font-size: 16px;
   color: #6b7280;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   text-align: center;
 }
 
-.register-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.verification-state {
+.verify-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -90,35 +59,65 @@
   gap: 16px;
 }
 
-.verification-icon {
-  width: 72px;
-  height: 72px;
+.state-icon {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: #eff6ff;
   color: #2563eb;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 24px;
 }
 
-.verification-email {
-  display: block;
-  font-weight: 600;
+.verify-state.success .state-icon {
+  background: #ecfdf3;
+  color: #059669;
+}
+
+.verify-state.error .state-icon {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.verify-message {
+  font-size: 16px;
   color: #111827;
+  margin: 0;
 }
 
-.verification-expiry {
+.verify-email {
   font-size: 14px;
   color: #6b7280;
   margin: 0;
 }
 
-.verification-actions {
+.verify-hint {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.verify-actions {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.resend-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.resend-message {
+  font-size: 14px;
+  color: #059669;
+  margin: 0;
 }
 
 .text-link {
@@ -134,47 +133,18 @@
   }
 }
 
-.verification-message {
-  font-size: 14px;
-  color: #059669;
-  margin: 0;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.admin-section {
-  margin-top: 8px;
-}
-
-.admin-toggle {
-  background: none;
-  border: none;
-  color: #2563eb;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  padding: 8px 0;
-  text-align: left;
-  width: 100%;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-.register-footer {
-  margin-top: 24px;
-  text-align: center;
-  font-size: 14px;
-  color: #6b7280;
-
-  a {
-    color: #2563eb;
-    cursor: pointer;
-    text-decoration: none;
-    font-weight: 500;
-
-    &:hover {
-      text-decoration: underline;
-    }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

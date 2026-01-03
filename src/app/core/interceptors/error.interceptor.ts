@@ -18,7 +18,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         toastService.error('Session expired. Please login again.');
         router.navigate(['/']);
       } else if (error.status === 403) {
-        toastService.error('You do not have permission to perform this action.');
+        const code = error.error?.details?.code;
+        if (code !== 'EMAIL_NOT_VERIFIED') {
+          toastService.error('You do not have permission to perform this action.');
+        }
       } else if (error.status === 404) {
         toastService.error('Resource not found.');
       } else if (error.status >= 500) {
@@ -35,4 +38,3 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
-

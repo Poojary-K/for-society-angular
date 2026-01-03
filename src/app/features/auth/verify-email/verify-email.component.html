@@ -1,0 +1,61 @@
+<div class="verify-overlay">
+  <div class="verify-modal">
+    <div class="verify-content">
+      <h2 class="verify-title">Email verification</h2>
+      <p class="verify-subtitle">Finish setting up your account.</p>
+
+      @if (status === 'loading') {
+        <div class="verify-state">
+          <div class="spinner" aria-hidden="true"></div>
+          <p class="verify-message">Verifying your email...</p>
+        </div>
+      } @else if (status === 'success') {
+        <div class="verify-state success">
+          <div class="state-icon">
+            <i class="fas fa-check" aria-hidden="true"></i>
+          </div>
+          <p class="verify-message">{{ message }}</p>
+          @if (verifiedEmail) {
+            <p class="verify-email">{{ verifiedEmail }}</p>
+          }
+          <div class="verify-actions">
+            <app-button type="primary" [fullWidth]="true" (click)="goToLogin()">Go to login</app-button>
+            <button class="text-link" type="button" (click)="goHome()">Back to home</button>
+          </div>
+        </div>
+      } @else {
+        <div class="verify-state error">
+          <div class="state-icon">
+            <i class="fas fa-envelope-open-text" aria-hidden="true"></i>
+          </div>
+          <p class="verify-message">{{ message }}</p>
+          @if (isExpired) {
+            <p class="verify-hint">Your link expired. Request a new verification email below.</p>
+          }
+          <form [formGroup]="resendForm" (ngSubmit)="resendVerification()" class="resend-form">
+            <app-input
+              type="email"
+              label="Email"
+              placeholder="Enter your email"
+              formControlName="email"
+              [required]="true"
+              [error]="resendForm.get('email')?.touched && resendForm.get('email')?.errors ? 'Valid email required' : ''"
+            ></app-input>
+            <app-button
+              type="secondary"
+              [fullWidth]="true"
+              [loading]="resendLoading"
+              [disabled]="resendForm.invalid"
+            >
+              Resend verification email
+            </app-button>
+          </form>
+          @if (resendMessage) {
+            <p class="resend-message">{{ resendMessage }}</p>
+          }
+          <button class="text-link" type="button" (click)="goToLogin()">Back to login</button>
+        </div>
+      }
+    </div>
+  </div>
+</div>

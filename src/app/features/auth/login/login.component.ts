@@ -22,6 +22,9 @@ export class LoginComponent {
 
   loginForm: FormGroup;
   loading = false;
+  emailNotVerified = false;
+  resendLoading = false;
+  resendMessage = '';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -33,6 +36,8 @@ export class LoginComponent {
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.loading = true;
+      this.emailNotVerified = false;
+      this.resendMessage = '';
       this.authService.login(this.loginForm.value).subscribe({
         next: (response) => {
           this.loading = false;
@@ -46,6 +51,10 @@ export class LoginComponent {
         },
         error: (error) => {
           this.loading = false;
+          if (error?.status === 403 && error?.error?.details?.code === 'EMAIL_NOT_VERIFIED') {
+            this.emailNotVerified = true;
+            return;
+          }
           // Error is handled by interceptor
           console.error('Login error:', error);
         },
@@ -62,5 +71,24 @@ export class LoginComponent {
   goBack(): void {
     this.router.navigate(['/']);
   }
-}
 
+  resendVerification(): void {
+    const email = this.loginForm.get('email')?.value?.trim();
+    if (!email) {
+      this.toastService.error('Please enter your email to resend verification.');
+      return;
+    }
+    this.resendLoading = true;
+    this.authService.resendVerification(email).subscribe({
+      next: (message) => {
+        this.resendLoading = false;
+        this.resendMessage = message;
+        this.toastService.success(message);
+      },
+      error: (error) => {
+        this.resendLoading = false;
+        console.error('Resend verification error:', error);
+      },
+    });
+  }
+}

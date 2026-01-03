@@ -38,7 +38,9 @@ export interface RegisterResponse {
   phone: string | null;
   joinedOn: string;
   isAdmin: boolean;
-  token: string;
+  token?: string;
+  verificationRequired?: boolean;
+  verificationExpiresInSeconds?: number;
 }
 
 export interface UpgradeToAdminRequest {
@@ -50,3 +52,8 @@ export interface UpgradeToAdminResponse {
   member: User;
 }
 
+export interface VerifyEmailResponse {
+  memberId: number;
+  email: string;
+  verifiedAt: string;
+}

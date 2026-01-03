@@ -9,6 +9,7 @@ import {
   RegisterResponse,
   UpgradeToAdminRequest,
   UpgradeToAdminResponse,
+  VerifyEmailResponse,
   User,
   ApiResponse,
 } from '../models';
@@ -51,14 +52,16 @@ export class AuthService {
       tap((apiResponse) => {
         if (apiResponse.success && apiResponse.data) {
           const response = apiResponse.data;
-          this.setAuthData(response.token, {
-            memberId: response.memberId,
-            name: response.name,
-            email: response.email,
-            phone: response.phone,
-            joinedOn: response.joinedOn,
-            isAdmin: response.isAdmin,
-          });
+          if (response.token && !response.verificationRequired) {
+            this.setAuthData(response.token, {
+              memberId: response.memberId,
+              name: response.name,
+              email: response.email,
+              phone: response.phone,
+              joinedOn: response.joinedOn,
+              isAdmin: response.isAdmin,
+            });
+          }
         }
       }),
       map((apiResponse) => apiResponse.data)
@@ -75,6 +78,18 @@ export class AuthService {
       }),
       map((apiResponse) => apiResponse.data)
     );
+  }
+
+  verifyEmail(token: string): Observable<VerifyEmailResponse> {
+    return this.http
+      .get<ApiResponse<VerifyEmailResponse>>(`${this.apiUrl}/verify-email`, { params: { token } })
+      .pipe(map((apiResponse) => apiResponse.data));
+  }
+
+  resendVerification(email: string): Observable<string> {
+    return this.http
+      .post<ApiResponse<null>>(`${this.apiUrl}/resend-verification`, { email })
+      .pipe(map((apiResponse) => apiResponse.message || 'Verification email sent'));
   }
 
   logout(): void {
@@ -115,4 +130,3 @@ export class AuthService {
     }
   }
 }
-
