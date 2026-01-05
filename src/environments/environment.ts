@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'https://backend-kmy4.onrender.com/api',
+  apiBaseUrl: 'https://dev.ird.mu-sigma.com/backendForSociety/api',
   donationCycleStartDay: 20
 };
