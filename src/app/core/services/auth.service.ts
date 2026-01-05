@@ -19,7 +19,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly apiUrl = `${environment.apiUrl}/auth`;
+  private readonly apiUrl = `${environment.apiBaseUrl}/auth`;
   private readonly tokenKey = 'auth_token';
   private readonly userKey = 'user_data';
 

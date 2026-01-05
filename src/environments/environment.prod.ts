@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:4000/api', // Update with production URL
+  apiBaseUrl: 'https://backend-kmy4.onrender.com/api',
+  donationCycleStartDay: 20
 };
-
