@@ -69,18 +69,23 @@ export class LandingComponent implements OnInit {
       },
     });
 
-    this.apiService.getContributions().subscribe({
-      next: (response) => {
-        if (response.success) {
-          const contributions = (response.data?.contributions || []) as Contribution[];
-          this.setCurrentCycleSummary(contributions);
-        }
-      },
-      error: () => {
-        this.currentCycleTotal = null;
-        this.currentCycleLabel = '';
-      },
-    });
+    if (this.isAuthenticated) {
+      this.apiService.getContributions().subscribe({
+        next: (response) => {
+          if (response.success) {
+            const contributions = (response.data?.contributions || []) as Contribution[];
+            this.setCurrentCycleSummary(contributions);
+          }
+        },
+        error: () => {
+          this.currentCycleTotal = null;
+          this.currentCycleLabel = '';
+        },
+      });
+    } else {
+      this.currentCycleTotal = null;
+      this.currentCycleLabel = '';
+    }
   }
 
   navigateToLogin(): void {
