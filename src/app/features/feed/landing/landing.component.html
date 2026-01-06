@@ -106,7 +106,7 @@
               </div>
             } @else {
               <img
-                [src]="activeCauseImage.url"
+                [src]="getViewerImageUrl(activeCauseImage)"
                 [alt]="activeCauseImage.imageid ? 'Cause image ' + activeCauseImage.imageid : 'Cause image'"
                 (error)="onViewerImageError(activeCauseImage, $event)"
               />

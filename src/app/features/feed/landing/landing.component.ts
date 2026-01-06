@@ -26,6 +26,8 @@ export class LandingComponent implements OnInit {
   causeImages = new Map<number, CauseImage[]>();
   private failedCauseImages = new Set<number>();
   private failedViewerImages = new Set<string>();
+  private causeImageStages = new Map<number, 'original' | 'export' | 'thumb'>();
+  private viewerImageStages = new Map<string, 'original' | 'export' | 'thumb'>();
   causeViewerOpen = false;
   activeCauseId: number | null = null;
   activeImageIndex = 0;
@@ -52,6 +54,8 @@ export class LandingComponent implements OnInit {
           this.causeImages.clear();
           this.failedCauseImages.clear();
           this.failedViewerImages.clear();
+          this.causeImageStages.clear();
+          this.viewerImageStages.clear();
           this.loadCauseImages(this.causes);
         }
         this.loading = false;
@@ -110,8 +114,18 @@ export class LandingComponent implements OnInit {
   }
 
   getCauseImageUrl(causeId: number): string | null {
+    if (this.failedCauseImages.has(causeId)) return null;
     const images = this.causeImages.get(causeId) || [];
-    return images[0]?.url || null;
+    const sourceUrl = images[0]?.url || null;
+    if (!sourceUrl) return null;
+    const stage = this.causeImageStages.get(causeId) || 'original';
+    if (stage === 'export') {
+      return this.getImageUrl(sourceUrl);
+    }
+    if (stage === 'thumb') {
+      return this.getImageFallbackUrl(sourceUrl);
+    }
+    return sourceUrl;
   }
 
   isCauseImageFailed(causeId: number): boolean {
@@ -120,21 +134,21 @@ export class LandingComponent implements OnInit {
 
   onCauseImageError(causeId: number, event: Event): void {
     const target = event.target as HTMLImageElement;
-    const sourceUrl = this.getCauseImageUrl(causeId) || '';
+    const sourceUrl = target.src || '';
     const fileId = this.getDriveFileId(sourceUrl);
-    const exportUrl = fileId ? this.getImageUrl(sourceUrl) : null;
-    const fallbackUrl = fileId ? this.getImageFallbackUrl(sourceUrl) : null;
-    const stage = target.dataset['fallbackStage'] || '';
+    if (!fileId) {
+      this.failedCauseImages.add(causeId);
+      return;
+    }
+    const stage = this.causeImageStages.get(causeId) || 'original';
 
-    if (exportUrl && stage !== 'export' && target.src !== exportUrl) {
-      target.dataset['fallbackStage'] = 'export';
-      target.src = exportUrl;
+    if (stage === 'original') {
+      this.causeImageStages.set(causeId, 'export');
       return;
     }
 
-    if (fallbackUrl && stage !== 'thumb' && target.src !== fallbackUrl) {
-      target.dataset['fallbackStage'] = 'thumb';
-      target.src = fallbackUrl;
+    if (stage === 'export') {
+      this.causeImageStages.set(causeId, 'thumb');
       return;
     }
     this.failedCauseImages.add(causeId);
@@ -176,25 +190,41 @@ export class LandingComponent implements OnInit {
 
   onViewerImageError(image: CauseImage, event: Event): void {
     const target = event.target as HTMLImageElement;
+    const sourceUrl = target.src || image.url;
+    const fileId = this.getDriveFileId(sourceUrl);
+    const key = this.getViewerKey(image);
+    if (!fileId) {
+      this.failedViewerImages.add(key);
+      return;
+    }
+    const stage = this.viewerImageStages.get(key) || 'original';
+
+    if (stage === 'original') {
+      this.viewerImageStages.set(key, 'export');
+      return;
+    }
+
+    if (stage === 'export') {
+      this.viewerImageStages.set(key, 'thumb');
+      return;
+    }
+
+    this.failedViewerImages.add(key);
+  }
+
+  getViewerImageUrl(image: CauseImage): string {
     const sourceUrl = image.url;
     const fileId = this.getDriveFileId(sourceUrl);
-    const exportUrl = fileId ? this.getImageUrl(sourceUrl) : null;
-    const fallbackUrl = fileId ? this.getImageFallbackUrl(sourceUrl) : null;
-    const stage = target.dataset['fallbackStage'] || '';
-
-    if (exportUrl && stage !== 'export' && target.src !== exportUrl) {
-      target.dataset['fallbackStage'] = 'export';
-      target.src = exportUrl;
-      return;
+    if (!fileId) return sourceUrl;
+    const key = this.getViewerKey(image);
+    const stage = this.viewerImageStages.get(key) || 'original';
+    if (stage === 'export') {
+      return this.getImageUrl(sourceUrl);
     }
-
-    if (fallbackUrl && stage !== 'thumb' && target.src !== fallbackUrl) {
-      target.dataset['fallbackStage'] = 'thumb';
-      target.src = fallbackUrl;
-      return;
+    if (stage === 'thumb') {
+      return this.getImageFallbackUrl(sourceUrl) || this.getImageUrl(sourceUrl);
     }
-
-    this.failedViewerImages.add(this.getViewerKey(image));
+    return sourceUrl;
   }
 
   parseFloat(value: string): number {
