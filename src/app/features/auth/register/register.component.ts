@@ -32,8 +32,8 @@ export class RegisterComponent {
   constructor() {
     this.registerForm = this.fb.group({
       name: ['', [Validators.required]],
-      email: ['', [Validators.email]],
-      phone: [''],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       adminSecretCode: [''],
     });
@@ -47,12 +47,6 @@ export class RegisterComponent {
       const formValue = { ...this.registerForm.value };
       if (!formValue.adminSecretCode) {
         delete formValue.adminSecretCode;
-      }
-      if (!formValue.email) {
-        delete formValue.email;
-      }
-      if (!formValue.phone) {
-        delete formValue.phone;
       }
 
       this.authService.register(formValue).subscribe({

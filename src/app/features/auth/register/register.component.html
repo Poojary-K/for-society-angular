@@ -51,17 +51,30 @@
 
           <app-input
             type="email"
-            label="Email (Optional)"
+            label="Email"
             placeholder="Enter your email"
             formControlName="email"
-            [error]="registerForm.get('email')?.touched && registerForm.get('email')?.errors ? 'Invalid email' : ''"
+            [required]="true"
+            [error]="
+              registerForm.get('email')?.touched && registerForm.get('email')?.errors
+                ? registerForm.get('email')?.hasError('required')
+                  ? 'Email is required'
+                  : 'Invalid email'
+                : ''
+            "
           ></app-input>
 
           <app-input
             type="text"
-            label="Phone (Optional)"
+            label="Phone"
             placeholder="Enter your phone"
             formControlName="phone"
+            [required]="true"
+            [error]="
+              registerForm.get('phone')?.touched && registerForm.get('phone')?.errors
+                ? 'Phone is required'
+                : ''
+            "
           ></app-input>
 
           <app-input
