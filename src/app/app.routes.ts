@@ -20,6 +20,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/causes/cause-detail/cause-detail.component').then(m => m.CauseDetailComponent),
   },
   {
+    path: 'verify-email',
+    loadComponent: () => import('./features/auth/verify-email/verify-email.component').then(m => m.VerifyEmailComponent),
+  },
+  {
     path: 'contributions',
     loadComponent: () => import('./features/contributions/contributions-view/contributions-view.component').then(m => m.ContributionsViewComponent),
     canActivate: [authGuard],
@@ -56,10 +60,18 @@ export const routes: Routes = [
         loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent),
       },
       {
+        path: 'forgot-password',
+        loadComponent: () => import('./features/auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent),
+      },
+      {
         path: 'verify-email',
         loadComponent: () => import('./features/auth/verify-email/verify-email.component').then(m => m.VerifyEmailComponent),
       },
     ],
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () => import('./features/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent),
   },
   {
     path: '**',

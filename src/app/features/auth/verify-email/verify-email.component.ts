@@ -53,6 +53,11 @@ export class VerifyEmailComponent implements OnInit {
         if (response.email) {
           this.resendForm.patchValue({ email: response.email });
         }
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: {},
+          replaceUrl: true,
+        });
       },
       error: (error) => {
         const errorMessage = error?.error?.message || 'Verification failed. Please request a new link.';

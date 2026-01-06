@@ -43,6 +43,15 @@ export interface RegisterResponse {
   verificationExpiresInSeconds?: number;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}
+
 export interface UpgradeToAdminRequest {
   adminSecretCode: string;
 }

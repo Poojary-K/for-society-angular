@@ -10,6 +10,8 @@ import {
   UpgradeToAdminRequest,
   UpgradeToAdminResponse,
   VerifyEmailResponse,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
   User,
   ApiResponse,
 } from '../models';
@@ -90,6 +92,18 @@ export class AuthService {
     return this.http
       .post<ApiResponse<null>>(`${this.apiUrl}/resend-verification`, { email })
       .pipe(map((apiResponse) => apiResponse.message || 'Verification email sent'));
+  }
+
+  forgotPassword(data: ForgotPasswordRequest): Observable<string> {
+    return this.http
+      .post<ApiResponse<null>>(`${this.apiUrl}/forgot-password`, data)
+      .pipe(map((apiResponse) => apiResponse.message || 'If the email exists, a password reset link has been sent.'));
+  }
+
+  resetPassword(data: ResetPasswordRequest): Observable<string> {
+    return this.http
+      .post<ApiResponse<null>>(`${this.apiUrl}/reset-password`, data)
+      .pipe(map((apiResponse) => apiResponse.message || 'Password updated successfully'));
   }
 
   logout(): void {

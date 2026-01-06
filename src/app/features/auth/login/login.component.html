@@ -25,6 +25,10 @@
           [error]="loginForm.get('password')?.touched && loginForm.get('password')?.errors ? 'Password must be at least 8 characters' : ''"
         ></app-input>
 
+        <div class="login-help">
+          <button type="button" class="text-link" (click)="navigateToForgotPassword()">Forgot password?</button>
+        </div>
+
         <app-button
           type="primary"
           [fullWidth]="true"
