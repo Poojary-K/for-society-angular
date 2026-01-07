@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { ApiResponse, CauseImage, ContributionImage } from '../models';
+import { Observable, map } from 'rxjs';
+import { ApiResponse, CauseImage, ContributionImage, Member } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -109,8 +109,22 @@ export class ApiService {
   }
 
   // Members
-  getMembers(): Observable<ApiResponse<{ members: any[] }>> {
-    return this.http.get<ApiResponse<{ members: any[] }>>(`${this.baseUrl}/members`);
+  getMembers(): Observable<ApiResponse<{ members: Member[] }>> {
+    return this.http.get<ApiResponse<{ members: Member[] }>>(`${this.baseUrl}/members`).pipe(
+      map((response) => {
+        if (!response?.data?.members) {
+          return response;
+        }
+        const members = response.data.members.filter((member) => member.email_verified !== false);
+        return {
+          ...response,
+          data: {
+            ...response.data,
+            members,
+          },
+        };
+      })
+    );
   }
 
   getMemberById(id: number): Observable<ApiResponse<any>> {

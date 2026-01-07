@@ -10,9 +10,9 @@ export interface CreateCauseRequest {
   title: string;
   description?: string;
   amount?: number;
+  createdat?: string;
 }
 
 export interface CausesResponse {
   causes: Cause[];
 }
-

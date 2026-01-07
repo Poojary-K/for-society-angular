@@ -29,8 +29,8 @@ export class EditMemberComponent {
   constructor() {
     this.memberForm = this.fb.group({
       name: ['', [Validators.required]],
-      email: ['', [Validators.email]],
-      phone: [''],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required]],
       isAdmin: [false],
     });
   }
@@ -61,8 +61,19 @@ export class EditMemberComponent {
 
   get emailError(): string {
     const control = this.memberForm.get('email');
+    if (control?.hasError('required') && control?.touched) {
+      return 'Email is required';
+    }
     if (control?.hasError('email') && control?.touched) {
       return 'Please enter a valid email address';
+    }
+    return '';
+  }
+
+  get phoneError(): string {
+    const control = this.memberForm.get('phone');
+    if (control?.hasError('required') && control?.touched) {
+      return 'Phone is required';
     }
     return '';
   }
@@ -77,8 +88,8 @@ export class EditMemberComponent {
 
       const memberData: any = {
         name: formValue.name.trim(),
-        email: formValue.email?.trim() || null,
-        phone: formValue.phone?.trim() || null,
+        email: formValue.email.trim(),
+        phone: formValue.phone.trim(),
       };
 
       if (this.canManageAdmin()) {

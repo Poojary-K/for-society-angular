@@ -77,6 +77,17 @@
         />
       </div>
 
+      <!-- Date -->
+      <div class="form-group">
+        <app-input
+          formControlName="createdat"
+          type="date"
+          label="Cause Date"
+          [required]="true"
+          [error]="createdatError"
+        />
+      </div>
+
       <!-- Images -->
       <div class="form-group">
         <label class="form-label">Images (optional)</label>

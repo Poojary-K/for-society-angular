@@ -25,7 +25,8 @@
           formControlName="email"
           type="email"
           label="Email"
-          placeholder="Enter email (optional)"
+          placeholder="Enter email"
+          [required]="true"
           [error]="emailError"
         />
       </div>
@@ -35,7 +36,9 @@
           formControlName="phone"
           type="text"
           label="Phone"
-          placeholder="Enter phone (optional)"
+          placeholder="Enter phone"
+          [required]="true"
+          [error]="phoneError"
         />
       </div>
 

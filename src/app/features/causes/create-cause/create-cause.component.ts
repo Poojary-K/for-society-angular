@@ -37,6 +37,7 @@ export class CreateCauseComponent implements OnInit {
       title: ['', [Validators.required, Validators.minLength(1)]],
       description: ['', [Validators.maxLength(1000)]],
       amount: [null, [Validators.min(0)]],
+      createdat: [this.getTodayDate(), [Validators.required]],
     });
   }
 
@@ -61,7 +62,12 @@ export class CreateCauseComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.causeForm.reset();
+    this.causeForm.reset({
+      title: '',
+      description: '',
+      amount: null,
+      createdat: this.getTodayDate(),
+    });
     this.causeForm.markAsUntouched();
     this.causeForm.markAsPristine();
   }
@@ -86,6 +92,7 @@ export class CreateCauseComponent implements OnInit {
         title: formValue.title.trim(),
         description: formValue.description?.trim() || undefined,
         amount: formValue.amount ? parseFloat(formValue.amount) : undefined,
+        createdat: this.toIsoDate(formValue.createdat),
       };
 
       if (images.length > 0) {
@@ -96,6 +103,9 @@ export class CreateCauseComponent implements OnInit {
         }
         if (causeData.amount !== undefined) {
           formData.append('amount', String(causeData.amount));
+        }
+        if (causeData.createdat) {
+          formData.append('createdat', causeData.createdat);
         }
         this.imagesUploading.set(true);
         const compressedImages = await compressImages(images, { quality: 0.5 });
@@ -223,12 +233,47 @@ export class CreateCauseComponent implements OnInit {
     return '';
   }
 
+  get createdatError(): string {
+    const control = this.causeForm.get('createdat');
+    const value = control?.value;
+    if (control?.touched && control?.errors) {
+      if (control.errors['required']) {
+        return 'Date is required';
+      }
+    }
+    if (!value) return '';
+    const parts = (value || '').split('-').map((s: string) => parseInt(s, 10));
+    if (parts.length !== 3) return 'Invalid date';
+    const [y, m, d] = parts;
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    if (dt.getTime() > Date.now()) {
+      return 'Date cannot be in the future';
+    }
+    return '';
+  }
+
   get descriptionLength(): number {
     return this.causeForm.get('description')?.value?.length || 0;
   }
 
   get maxDescriptionLength(): number {
     return 1000;
+  }
+
+  private getTodayDate(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private toIsoDate(value: string | null | undefined): string | undefined {
+    if (!value) return undefined;
+    const parts = (value || '').split('-').map((s: string) => parseInt(s, 10));
+    if (parts.length !== 3) return undefined;
+    const [y, m, d] = parts;
+    return new Date(Date.UTC(y, m - 1, d)).toISOString();
   }
 
   trackByCauseId(index: number, cause: Cause): number {
