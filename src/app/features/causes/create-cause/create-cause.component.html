@@ -59,7 +59,7 @@
         <textarea
           formControlName="description"
           class="form-textarea"
-          placeholder="Enter cause description (optional)"
+          placeholder="Enter cause description"
           rows="4"
           [maxlength]="maxDescriptionLength"
         ></textarea>
@@ -72,7 +72,8 @@
           formControlName="amount"
           type="number"
           label="Target Amount (₹)"
-          placeholder="Enter target amount (optional)"
+          placeholder="Enter target amount"
+          [required]="true"
           [error]="amountError"
         />
       </div>

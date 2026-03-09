@@ -35,8 +35,8 @@ export class CreateCauseComponent implements OnInit {
   constructor() {
     this.causeForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(1)]],
-      description: ['', [Validators.maxLength(1000)]],
-      amount: [null, [Validators.min(0)]],
+      description: ['', [Validators.required, Validators.maxLength(1000)]],
+      amount: [null, [Validators.required, Validators.min(0)]],
       createdat: [this.getTodayDate(), [Validators.required]],
     });
   }
@@ -216,6 +216,9 @@ export class CreateCauseComponent implements OnInit {
   get descriptionError(): string {
     const descControl = this.causeForm.get('description');
     if (descControl?.touched && descControl?.errors) {
+      if (descControl.errors['required']) {
+        return 'Description is required';
+      }
       if (descControl.errors['maxlength']) {
         return 'Description must be less than 1000 characters';
       }
@@ -226,6 +229,9 @@ export class CreateCauseComponent implements OnInit {
   get amountError(): string {
     const amountControl = this.causeForm.get('amount');
     if (amountControl?.touched && amountControl?.errors) {
+      if (amountControl.errors['required']) {
+        return 'Amount is required';
+      }
       if (amountControl.errors['min']) {
         return 'Amount must be positive';
       }
