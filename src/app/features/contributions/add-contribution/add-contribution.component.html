@@ -50,13 +50,7 @@
             <option value="">Select a member</option>
             @for (member of members(); track member.memberid) {
               <option [value]="member.memberid">
-                {{ member.name }}
-                @if (member.email) {
-                  ({{ member.email }})
-                }
-                @if (member.is_admin) {
-                  - Admin
-                }
+                {{ getMemberOptionLabel(member) }}
               </option>
             }
           </select>

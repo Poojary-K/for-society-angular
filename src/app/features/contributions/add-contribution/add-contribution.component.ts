@@ -225,7 +225,24 @@ export class AddContributionComponent implements OnInit {
 
   getMemberName(memberId: number): string {
     const member = this.members().find((m) => m.memberid === memberId);
-    return member ? member.name : `Member #${memberId}`;
+    if (!member) {
+      return `Member #${memberId}`;
+    }
+    return this.isExternalMember(member) ? 'External (outside donor)' : member.name;
+  }
+
+  getMemberOptionLabel(member: Member): string {
+    if (this.isExternalMember(member)) {
+      return 'External (outside donor)';
+    }
+    if (member.email) {
+      return `${member.name} (${member.email})${member.is_admin ? ' - Admin' : ''}`;
+    }
+    return `${member.name}${member.is_admin ? ' - Admin' : ''}`;
+  }
+
+  private isExternalMember(member: Member): boolean {
+    return member.email === null && member.name.trim().toLowerCase() === 'external';
   }
 
   get memberIdError(): string {

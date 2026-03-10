@@ -115,7 +115,9 @@ export class ApiService {
         if (!response?.data?.members) {
           return response;
         }
-        const members = response.data.members.filter((member) => member.email_verified !== false);
+        const members = response.data.members.filter(
+          (member) => member.email === null || member.email_verified !== false
+        );
         return {
           ...response,
           data: {
