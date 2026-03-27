@@ -133,7 +133,7 @@ export class AddContributionComponent implements OnInit {
         this.apiService.createContributionWithImages(formData).subscribe({
           next: (response) => {
             if (response.success && response.data) {
-              this.handleContributionCreated(response.data);
+              this.handleContributionCreated(response.data, response.warnings);
               this.resetImages();
             }
             this.imagesUploading.set(false);
@@ -149,7 +149,7 @@ export class AddContributionComponent implements OnInit {
         this.apiService.createContribution(contributionData).subscribe({
           next: (response) => {
             if (response.success && response.data) {
-              this.handleContributionCreated(response.data);
+              this.handleContributionCreated(response.data, response.warnings);
             }
             this.loading.set(false);
           },
@@ -164,7 +164,7 @@ export class AddContributionComponent implements OnInit {
     }
   }
 
-  private handleContributionCreated(data: any): void {
+  private handleContributionCreated(data: any, warnings?: string[]): void {
     const newContribution: Contribution = {
       contributionid: data.contributionid,
       memberid: data.memberid,
@@ -184,6 +184,11 @@ export class AddContributionComponent implements OnInit {
     const member = this.members().find((m) => m.memberid === newContribution.memberid);
     const memberName = member?.name || `Member #${newContribution.memberid}`;
     this.toastService.success(`Contribution of ₹${newContribution.amount} for ${memberName} added successfully!`);
+    if (warnings?.length) {
+      for (const w of warnings) {
+        this.toastService.warning(w);
+      }
+    }
 
     // Reset form for next entry
     this.resetForm();

@@ -114,7 +114,7 @@ export class CreateCauseComponent implements OnInit {
         this.apiService.createCauseWithImages(formData).subscribe({
           next: (response) => {
             if (response.success && response.data) {
-              this.handleCauseCreated(response.data);
+              this.handleCauseCreated(response.data, response.warnings);
               this.resetImages();
             }
             this.imagesUploading.set(false);
@@ -130,7 +130,7 @@ export class CreateCauseComponent implements OnInit {
         this.apiService.createCause(causeData).subscribe({
           next: (response) => {
             if (response.success && response.data) {
-              this.handleCauseCreated(response.data);
+              this.handleCauseCreated(response.data, response.warnings);
             }
             this.loading.set(false);
           },
@@ -146,7 +146,7 @@ export class CreateCauseComponent implements OnInit {
     }
   }
 
-  private handleCauseCreated(data: any): void {
+  private handleCauseCreated(data: any, warnings?: string[]): void {
     const newCause: Cause = {
       causeid: data.causeid,
       title: data.title,
@@ -161,6 +161,11 @@ export class CreateCauseComponent implements OnInit {
     this.showSuccess.set(true);
 
     this.toastService.success(`Cause "${newCause.title}" created successfully!`);
+    if (warnings?.length) {
+      for (const w of warnings) {
+        this.toastService.warning(w);
+      }
+    }
 
     // Reset form for next entry
     this.resetForm();
