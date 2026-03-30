@@ -1,4 +1,4 @@
-/** Raster logo in `public/logo/app-logo.jpg` (favicon uses the same path in `index.html`). */
+/** Raster logo in `public/logo/app-logo.jpg`. Tab icon: `public/favicon.ico`; iOS home screen: `public/apple-touch-icon.png`. */
 export const APP_LOGO_URL = '/logo/app-logo.jpg';
 
 /** Use with `[style.background-image]` on a sized div + `background-size: contain`. */
