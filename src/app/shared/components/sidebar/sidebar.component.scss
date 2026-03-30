@@ -54,17 +54,42 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
-  min-height: 64px;
+  gap: 0.75rem;
+  padding: 0.5rem 0.2rem;
+  min-height: 50px;
   border-bottom: 1px solid #e5e7eb;
   background: #f9fafb;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.sidebar-logo-mark {
+  flex-shrink: 0;
+  width: 3.5rem;
+  height: 3.2rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 
 .sidebar-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
   margin: 0;
+  min-width: 0;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

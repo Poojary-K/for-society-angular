@@ -124,6 +124,10 @@
     line-height: 1.7;
     margin: 0;
     white-space: pre-wrap;
+    max-height: min(50vh, 28rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-break: break-word;
   }
 }
 

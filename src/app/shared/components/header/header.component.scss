@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
+  padding: 0.5rem 0.5rem;
   max-width: 100%;
   min-height: 64px;
 }
@@ -61,25 +61,51 @@
 }
 
 .logo {
+  margin: 0;
+  flex: 1;
+  // text-align: left;
+  font-size: inherit;
+  font-weight: inherit;
+
+  @media (min-width: 768px) {
+    display: none;
+    flex: 0;
+  }
+}
+
+.logo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.logo-mark {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.logo-text {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
-  margin: 0;
-  cursor: pointer;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  flex: 1;
-  text-align: center;
-  white-space: nowrap;
-
-  @media (min-width: 768px) {
-    display: none;
-    text-align: left;
-    flex: 0;
-    margin-left: 0;
-  }
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .header-actions {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
+import { APP_LOGO_BACKGROUND_IMAGE } from '../../../core/constants/branding.constants';
 
 @Component({
   selector: 'app-header',
@@ -12,6 +13,7 @@ import { SidebarService } from '../../../core/services/sidebar.service';
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
+  readonly appLogoBackground = APP_LOGO_BACKGROUND_IMAGE;
   router = inject(Router);
   private authService = inject(AuthService);
   private sidebarService = inject(SidebarService);

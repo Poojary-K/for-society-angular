@@ -4,6 +4,7 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
+import { APP_LOGO_BACKGROUND_IMAGE } from '../../../core/constants/branding.constants';
 
 interface NavItem {
   label: string;
@@ -21,6 +22,7 @@ interface NavItem {
   styleUrl: './sidebar.component.scss',
 })
 export class SidebarComponent implements OnInit, OnDestroy {
+  readonly appLogoBackground = APP_LOGO_BACKGROUND_IMAGE;
   private router = inject(Router);
   private authService = inject(AuthService);
   private sidebarService = inject(SidebarService);

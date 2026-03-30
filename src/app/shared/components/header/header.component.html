@@ -6,7 +6,17 @@
     </button>
 
     <!-- Logo -->
-    <h1 class="logo" (click)="router.navigate(['/'])">For the Society</h1>
+    <h1 class="logo">
+      <button type="button" class="logo-button" (click)="router.navigate(['/'])" aria-label="Home">
+        <div
+          class="logo-mark"
+          role="img"
+          aria-hidden="true"
+          [style.background-image]="appLogoBackground"
+        ></div>
+        <span class="logo-text">For the Society</span>
+      </button>
+    </h1>
 
     <!-- Right Side Actions -->
     <div class="header-actions">

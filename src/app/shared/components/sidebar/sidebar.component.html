@@ -6,7 +6,15 @@
   <div class="sidebar-content">
     <!-- Header -->
     <div class="sidebar-header">
-      <h2 class="sidebar-title">For the Society</h2>
+      <button type="button" class="sidebar-brand" (click)="navigateTo('/')" aria-label="Home">
+        <div
+          class="sidebar-logo-mark"
+          role="img"
+          aria-hidden="true"
+          [style.background-image]="appLogoBackground"
+        ></div>
+        <span class="sidebar-title">For the Society</span>
+      </button>
       <button class="sidebar-toggle" (click)="toggleSidebar()" aria-label="Toggle sidebar">
         <i class="fas" [class.fa-times]="isOpen()" [class.fa-bars]="!isOpen()"></i>
       </button>
