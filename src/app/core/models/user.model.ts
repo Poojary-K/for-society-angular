@@ -5,6 +5,8 @@ export interface User {
   phone: string | null;
   joinedOn: string;
   isAdmin: boolean;
+  /** When false, the user does not receive cause/contribution notification emails (auth emails still send). */
+  emailUpdatesEnabled?: boolean;
 }
 
 export interface AuthTokenPayload {
@@ -38,6 +40,7 @@ export interface RegisterResponse {
   phone: string | null;
   joinedOn: string;
   isAdmin: boolean;
+  emailUpdatesEnabled?: boolean;
   token?: string;
   verificationRequired?: boolean;
   verificationExpiresInSeconds?: number;

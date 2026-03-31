@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
+import { ApiService } from '../../../core/services/api.service';
 import { ContributionsService } from '../../../core/services/contributions.service';
 import { RANKING_COLORS, RANKING_LABELS } from '../../configs/ranking.config';
 import { Contribution } from '../../../core/models/contribution.model';
@@ -16,6 +17,7 @@ import { Contribution } from '../../../core/models/contribution.model';
 })
 export class ProfileDrawerComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
+  private apiService = inject(ApiService);
   private contributionsService = inject(ContributionsService);
   private router = inject(Router);
   private subscription = new Subscription();
@@ -23,6 +25,8 @@ export class ProfileDrawerComponent implements OnInit, OnDestroy {
   isOpen = signal<boolean>(false);
   contributions = signal<Contribution[]>([]);
   loading = signal<boolean>(false);
+  emailPrefsLoading = signal<boolean>(false);
+  emailUpdatesEnabled = signal<boolean>(true);
   private previousRoute: string = '/';
   private routeHistory: string[] = [];
 
@@ -161,7 +165,52 @@ export class ProfileDrawerComponent implements OnInit, OnDestroy {
       }
       this.isOpen.set(true);
       this.loadContributions();
+      this.loadEmailPreferences();
     }
+  }
+
+  private loadEmailPreferences(): void {
+    const enabledStored = this.authService.currentUser()?.emailUpdatesEnabled;
+    if (enabledStored !== undefined) {
+      this.emailUpdatesEnabled.set(enabledStored);
+    }
+    this.emailPrefsLoading.set(true);
+    const sub = this.apiService.getMyEmailPreferences().subscribe({
+      next: (res) => {
+        if (res.success && res.data && typeof res.data.emailUpdatesEnabled === 'boolean') {
+          this.emailUpdatesEnabled.set(res.data.emailUpdatesEnabled);
+          this.authService.mergeCurrentUser({ emailUpdatesEnabled: res.data.emailUpdatesEnabled });
+        }
+        this.emailPrefsLoading.set(false);
+      },
+      error: () => {
+        this.emailPrefsLoading.set(false);
+      },
+    });
+    this.subscription.add(sub);
+  }
+
+  onEmailPrefChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const checked = input.checked;
+    const previous = this.emailUpdatesEnabled();
+    this.emailUpdatesEnabled.set(checked);
+    this.emailPrefsLoading.set(true);
+    const sub = this.apiService.patchMyEmailPreferences({ emailUpdatesEnabled: checked }).subscribe({
+      next: (res) => {
+        if (res.success && res.data && typeof res.data.emailUpdatesEnabled === 'boolean') {
+          this.emailUpdatesEnabled.set(res.data.emailUpdatesEnabled);
+          this.authService.mergeCurrentUser({ emailUpdatesEnabled: res.data.emailUpdatesEnabled });
+        }
+        this.emailPrefsLoading.set(false);
+      },
+      error: () => {
+        this.emailUpdatesEnabled.set(previous);
+        input.checked = previous;
+        this.emailPrefsLoading.set(false);
+      },
+    });
+    this.subscription.add(sub);
   }
 
   close(): void {

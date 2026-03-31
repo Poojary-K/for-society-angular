@@ -108,6 +108,22 @@ export class ApiService {
     return this.http.delete<ApiResponse<any>>(`${this.baseUrl}/contributions/${id}/images/${imageId}`);
   }
 
+  /** Cause/contribution email notifications preference (authenticated). */
+  getMyEmailPreferences(): Observable<ApiResponse<{ emailUpdatesEnabled: boolean }>> {
+    return this.http.get<ApiResponse<{ emailUpdatesEnabled: boolean }>>(
+      `${this.baseUrl}/me/email-preferences`
+    );
+  }
+
+  patchMyEmailPreferences(body: {
+    emailUpdatesEnabled: boolean;
+  }): Observable<ApiResponse<{ emailUpdatesEnabled: boolean }>> {
+    return this.http.patch<ApiResponse<{ emailUpdatesEnabled: boolean }>>(
+      `${this.baseUrl}/me/email-preferences`,
+      body
+    );
+  }
+
   // Members
   getMembers(): Observable<ApiResponse<{ members: Member[] }>> {
     return this.http.get<ApiResponse<{ members: Member[] }>>(`${this.baseUrl}/members`).pipe(

@@ -50,7 +50,16 @@
   }
 }
 
+.drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
 .drawer-header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -60,7 +69,7 @@
 }
 
 .drawer-title {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #111827;
   margin: 0;
@@ -83,70 +92,107 @@
 }
 
 .user-profile {
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1.25rem 0.875rem;
   text-align: center;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .user-avatar-large {
-  width: 80px;
-  height: 80px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 2rem;
-  margin: 0 auto 1rem;
+  font-size: 1.35rem;
+  margin: 0 auto 0.5rem;
 }
 
 .user-name {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.35rem;
 }
 
 .user-email,
 .user-phone {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   color: #6b7280;
-  margin: 0.25rem 0;
+  margin: 0.15rem 0;
+  word-break: break-word;
 }
 
 .user-badge {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.55rem;
   background: #7c3aed;
   color: white;
   border-radius: 1rem;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  margin: 0.5rem 0;
+  margin: 0.35rem 0.25rem 0 0;
 }
 
 .rank-pill {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
+  padding: 0.2rem 0.55rem;
   color: #ffffff;
   border-radius: 1rem;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
-  margin-left: 0.5rem;
+  margin: 0.35rem 0 0 0.25rem;
 }
 
 .user-joined {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: #9ca3af;
-  margin: 0.5rem 0 0;
+  margin: 0.35rem 0 0;
+}
+
+.email-preferences {
+  padding: 0.625rem 1.25rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+
+  .section-title {
+    font-size: 0.9375rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.email-pref-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  color: #374151;
+  line-height: 1.4;
+
+  input {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+  }
+}
+
+.email-pref-label {
+  font-weight: 500;
+}
+
+.email-pref-hint {
+  font-size: 0.6875rem;
+  color: #6b7280;
+  margin: 0.45rem 0 0;
+  line-height: 1.35;
 }
 
 .contribution-summary {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  padding: 1.25rem;
+  gap: 0.65rem;
+  padding: 0.75rem 1.25rem;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -160,15 +206,15 @@
 }
 
 .summary-icon {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 0.5rem;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.125rem;
+  font-size: 1rem;
   flex-shrink: 0;
 }
 
@@ -184,43 +230,41 @@
 }
 
 .summary-value {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #111827;
   margin: 0;
 }
 
 .contributions-section {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.25rem;
+  padding: 0.75rem 1.25rem 1.5rem;
 }
 
 .section-title {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #111827;
-  margin: 0 0 1rem;
+  margin: 0 0 0.65rem;
 }
 
 .contributions-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .contribution-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 0.65rem 0.75rem;
   background: #f9fafb;
   border-radius: 0.5rem;
   border-left: 3px solid #2563eb;
 }
 
 .contribution-amount {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #10b981;
 }
@@ -233,23 +277,25 @@
 .empty-state,
 .loading-state {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 1.5rem 1rem;
   color: #9ca3af;
 
   i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
     display: block;
   }
 
   p {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
   }
 }
 
 .drawer-footer {
-  padding: 1.25rem;
+  flex-shrink: 0;
+  padding: 0.75rem 1.25rem;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
 }

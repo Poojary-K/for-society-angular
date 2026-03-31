@@ -42,7 +42,10 @@ export class AuthService {
       tap((apiResponse) => {
         if (apiResponse.success && apiResponse.data) {
           const response = apiResponse.data;
-          this.setAuthData(response.token, response.member);
+          this.setAuthData(response.token, {
+            ...response.member,
+            emailUpdatesEnabled: response.member.emailUpdatesEnabled ?? true,
+          });
         }
       }),
       map((apiResponse) => apiResponse.data)
@@ -62,6 +65,7 @@ export class AuthService {
               phone: response.phone,
               joinedOn: response.joinedOn,
               isAdmin: response.isAdmin,
+              emailUpdatesEnabled: response.emailUpdatesEnabled ?? true,
             });
           }
         }
@@ -75,7 +79,10 @@ export class AuthService {
       tap((apiResponse) => {
         if (apiResponse.success && apiResponse.data) {
           const response = apiResponse.data;
-          this.setAuthData(response.token, response.member);
+          this.setAuthData(response.token, {
+            ...response.member,
+            emailUpdatesEnabled: response.member.emailUpdatesEnabled ?? true,
+          });
         }
       }),
       map((apiResponse) => apiResponse.data)
@@ -117,6 +124,19 @@ export class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem(this.tokenKey);
+  }
+
+  /**
+   * Merges fields into the stored user (e.g. after updating preferences).
+   */
+  mergeCurrentUser(partial: Partial<User>): void {
+    const current = this.currentUser();
+    if (!current) {
+      return;
+    }
+    const next = { ...current, ...partial };
+    localStorage.setItem(this.userKey, JSON.stringify(next));
+    this.currentUser.set(next);
   }
 
   private setAuthData(token: string, user: User): void {

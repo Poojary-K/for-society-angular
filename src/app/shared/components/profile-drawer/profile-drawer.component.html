@@ -12,6 +12,7 @@
       </button>
     </div>
 
+    <div class="drawer-body">
     <!-- User Info -->
     <div class="user-profile" *ngIf="currentUser()">
       <div class="user-avatar-large">
@@ -29,6 +30,22 @@
       >
       <p class="user-joined">
         Joined: {{ formatDate(currentUser()?.joinedOn || '') }}
+      </p>
+    </div>
+
+    <div class="email-preferences" *ngIf="currentUser()">
+      <h4 class="section-title">Email notifications</h4>
+      <label class="email-pref-row">
+        <input
+          type="checkbox"
+          [checked]="emailUpdatesEnabled()"
+          (change)="onEmailPrefChange($event)"
+          [disabled]="emailPrefsLoading()"
+        />
+        <span class="email-pref-label">Email me about causes &amp; contributions</span>
+      </label>
+      <p class="email-pref-hint">
+        Account emails still send when needed. Unsubscribe anytime from email footers.
       </p>
     </div>
 
@@ -78,6 +95,7 @@
         <i class="fas fa-spinner fa-spin"></i>
         <p>Loading contributions...</p>
       </div>
+    </div>
     </div>
 
     <!-- Logout Button -->
