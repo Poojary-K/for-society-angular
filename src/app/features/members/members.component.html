@@ -1,7 +1,20 @@
 <div class="members-view">
   <div class="page-header">
-    <h1 class="page-title">Members</h1>
-    <p class="page-subtitle">View and manage all members (Admin only)</p>
+    <div class="page-header-text">
+      <h1 class="page-title">Members</h1>
+      <p class="page-subtitle">View and manage all members (Admin only)</p>
+    </div>
+    @if (isAdmin) {
+      <button
+        type="button"
+        class="backup-btn"
+        [disabled]="backupStarting()"
+        (click)="startDbBackup()"
+      >
+        <i class="fas fa-database"></i>
+        {{ backupStarting() ? 'Starting backup...' : 'Backup database' }}
+      </button>
+    }
   </div>
 
   <!-- Filters -->

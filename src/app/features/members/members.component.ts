@@ -22,6 +22,7 @@ export class MembersComponent implements OnInit {
 
   members = signal<Member[]>([]);
   loading = signal<boolean>(true);
+  backupStarting = signal<boolean>(false);
   searchQuery = signal<string>('');
   filterRole = signal<'all' | 'admin' | 'member'>('all');
 
@@ -101,6 +102,27 @@ export class MembersComponent implements OnInit {
   editMember(member: Member, event: Event): void {
     event.stopPropagation();
     this.router.navigate(['/members', member.memberid]);
+  }
+
+  startDbBackup(): void {
+    if (this.backupStarting()) {
+      return;
+    }
+
+    this.backupStarting.set(true);
+    this.apiService.startDbBackup().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.toastService.info('Database backup in progress. You will receive an email when it completes.');
+        } else {
+          this.toastService.error('Failed to start database backup.');
+        }
+        this.backupStarting.set(false);
+      },
+      error: () => {
+        this.backupStarting.set(false);
+      },
+    });
   }
 
   deleteMember(member: Member, event: Event): void {

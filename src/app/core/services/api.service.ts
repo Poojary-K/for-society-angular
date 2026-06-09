@@ -161,4 +161,9 @@ export class ApiService {
   getFundStatus(): Observable<ApiResponse<any>> {
     return this.http.get<ApiResponse<any>>(`${this.baseUrl}/funds/status`);
   }
+
+  // Admin
+  startDbBackup(): Observable<ApiResponse<{ message: string }>> {
+    return this.http.post<ApiResponse<{ message: string }>>(`${this.baseUrl}/admin/db-backup`, {});
+  }
 }
