@@ -1,0 +1,26 @@
+<div class="message-list">
+  @if (messages.length === 0 && !loading) {
+    <div class="empty-state">
+      <i class="fas fa-comments empty-icon"></i>
+      <p>Ask me about fund balance, your contributions, or causes.</p>
+    </div>
+  }
+
+  @for (message of messages; track message.messageId) {
+    <div class="message-row" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
+      @if (message.role === 'assistant') {
+        <div class="bubble markdown-body" [innerHTML]="message.content | markdown"></div>
+      } @else {
+        <div class="bubble">{{ message.content }}</div>
+      }
+    </div>
+  }
+
+  @if (loading) {
+    <div class="message-row assistant">
+      <div class="bubble thinking">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+    </div>
+  }
+</div>

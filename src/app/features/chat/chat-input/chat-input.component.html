@@ -1,0 +1,14 @@
+<div class="chat-input">
+  <textarea
+    class="input-field"
+    rows="1"
+    placeholder="Ask about fund balance, contributions, or causes..."
+    [ngModel]="draft()"
+    (ngModelChange)="draft.set($event)"
+    (keydown)="onKeydown($event)"
+    [disabled]="disabled"
+  ></textarea>
+  <button class="send-btn" (click)="submit()" [disabled]="disabled || !draft().trim()" aria-label="Send message">
+    <i class="fas fa-paper-plane"></i>
+  </button>
+</div>

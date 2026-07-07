@@ -32,6 +32,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   currentRoute = signal<string>('');
   isMobile = signal<boolean>(false);
 
+  private readonly sidebarHandle = { toggle: () => this.toggleSidebar() };
+
   // Computed signals
   isAuthenticated = computed(() => this.authService.isAuthenticated());
   currentUser = computed(() => this.authService.currentUser());
@@ -68,6 +70,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: 'fa-users',
       requiresAuth: true,
     },
+    {
+      label: 'Assistant',
+      route: '/chat',
+      icon: 'fa-comments',
+      requiresAuth: true,
+    },
   ];
 
   visibleNavItems = computed(() => {
@@ -87,13 +95,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.setInitialSidebarState();
     this.trackCurrentRoute();
     // Register with sidebar service
-    this.sidebarService.registerSidebar({
-      toggle: () => this.toggleSidebar(),
-    });
+    this.sidebarService.registerSidebar(this.sidebarHandle);
   }
 
   ngOnDestroy(): void {
-    this.sidebarService.unregisterSidebar();
+    this.sidebarService.unregisterSidebar(this.sidebarHandle);
   }
 
   @HostListener('window:resize')

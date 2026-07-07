@@ -1,0 +1,40 @@
+<div class="chat-page">
+  @if (sidebarOpen()) {
+    <div class="sidebar-backdrop" (click)="toggleSidebar()"></div>
+  }
+
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <app-chat-session-list
+      [sessions]="sessions()"
+      [activeSessionId]="activeSessionId()"
+      (select)="selectSession($event)"
+      (create)="createNewSession()"
+      (delete)="deleteSession($event)"
+    ></app-chat-session-list>
+  </aside>
+
+  <section class="conversation">
+    <header class="conversation-header">
+      <button class="sessions-toggle" (click)="toggleSidebar()" aria-label="Toggle chat sessions">
+        <i class="fas fa-comments"></i>
+        <span>Chats</span>
+      </button>
+      <h2 class="title">Assistant</h2>
+    </header>
+
+    @if (agentDown()) {
+      <div class="agent-down-banner">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>AI assistant is currently unavailable</span>
+      </div>
+    }
+
+    <div class="messages" #scrollContainer>
+      <app-chat-message-list [messages]="messages()" [loading]="isLoading()"></app-chat-message-list>
+    </div>
+
+    <div (click)="onInputAreaClick()">
+      <app-chat-input [disabled]="isLoading() || agentDown()" (send)="onSend($event)"></app-chat-input>
+    </div>
+  </section>
+</div>

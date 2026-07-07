@@ -1,0 +1,29 @@
+<div class="session-list">
+  <button class="new-chat-btn" (click)="create.emit()">
+    <i class="fas fa-plus"></i>
+    <span>New chat</span>
+  </button>
+
+  <div class="sessions">
+    @for (session of sessions; track session.sessionId) {
+      <div
+        class="session-item"
+        [class.active]="session.sessionId === activeSessionId"
+        (click)="select.emit(session.sessionId)"
+      >
+        <i class="fas fa-comment-dots session-icon"></i>
+        <span class="session-title">{{ session.title }}</span>
+        <button class="delete-btn" (click)="onDelete(session.sessionId, $event)" aria-label="Delete chat">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    } @empty {
+      <p class="empty-hint">No chats yet. Start a new one!</p>
+    }
+  </div>
+
+  <button class="back-btn" (click)="goToMainNav()">
+    <i class="fas fa-arrow-left"></i>
+    <span>Main menu</span>
+  </button>
+</div>

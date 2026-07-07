@@ -25,6 +25,11 @@ class LoadingService {
 export const loadingService = new LoadingService();
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
+  // Chat requests have their own inline typing indicator — skip the full-page overlay.
+  if (req.url.includes('/chat')) {
+    return next(req);
+  }
+
   loadingService.start();
 
   return next(req).pipe(

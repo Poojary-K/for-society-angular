@@ -49,6 +49,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
   {
+    path: 'chat',
+    loadComponent: () => import('./features/chat/chat-page/chat-page.component').then(m => m.ChatPageComponent),
+    canActivate: [authGuard],
+  },
+  {
     path: 'auth',
     children: [
       {
