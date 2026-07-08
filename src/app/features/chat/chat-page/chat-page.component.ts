@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { ChatService } from '../services/chat.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
@@ -30,11 +31,13 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   agentAvailable = signal<boolean>(true);
   agentDown = computed(() => !this.agentAvailable());
 
+  streamingText = signal<string>('');
+  streamingTools = signal<string[]>([]);
+
   private healthInterval?: ReturnType<typeof setInterval>;
+  private streamSubscription?: Subscription;
 
   private shouldScroll = false;
-  // While the chat page is mounted, the header's hamburger toggles this page's
-  // session-list sidebar instead of the global nav sidebar (see SidebarService).
   private readonly sidebarHandle = { toggle: () => this.toggleSidebar() };
 
   ngOnInit(): void {
@@ -47,6 +50,7 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   ngOnDestroy(): void {
     this.sidebarService.unregisterSidebar(this.sidebarHandle);
     clearInterval(this.healthInterval);
+    this.streamSubscription?.unsubscribe();
   }
 
   private pollAgentHealth(): void {
@@ -118,7 +122,6 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   onSend(content: string): void {
     const activeId = this.activeSessionId();
     if (activeId === null) {
-      // First message in a brand-new conversation: create the session, then send.
       this.chatService.createSession().subscribe({
         next: (session) => {
           this.sessions.set([session, ...this.sessions()]);
@@ -133,7 +136,6 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private dispatchMessage(sessionId: number, content: string): void {
-    // Optimistically show the user's message while the assistant replies.
     const optimistic: ChatMessage = {
       messageId: -Date.now(),
       role: 'user',
@@ -142,26 +144,54 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
     };
     this.messages.set([...this.messages(), optimistic]);
     this.isLoading.set(true);
+    this.streamingText.set('');
+    this.streamingTools.set([]);
     this.shouldScroll = true;
 
-    this.chatService.sendMessage(sessionId, content).subscribe({
-      next: (response) => {
-        this.messages.set([
-          ...this.messages().filter((m) => m.messageId !== optimistic.messageId),
-          response.userMessage,
-          response.assistantMessage,
-        ]);
-        this.isLoading.set(false);
-        this.shouldScroll = true;
-        this.loadSessions();
+    this.streamSubscription?.unsubscribe();
+    this.streamSubscription = this.chatService.streamMessage(sessionId, content).subscribe({
+      next: (event) => {
+        if (event.type === 'tool_start' && event.toolName) {
+          this.streamingTools.update((tools) => [...tools, event.toolName!]);
+          this.shouldScroll = true;
+        } else if (event.type === 'token' && event.text) {
+          this.streamingText.update((t) => t + event.text);
+          this.shouldScroll = true;
+        } else if (event.type === 'done' && event.userMessage && event.assistantMessage) {
+          this.messages.set([
+            ...this.messages().filter((m) => m.messageId !== optimistic.messageId),
+            event.userMessage,
+            event.assistantMessage,
+          ]);
+          this.streamingText.set('');
+          this.streamingTools.set([]);
+          this.isLoading.set(false);
+          this.shouldScroll = true;
+          this.loadSessions();
+        } else if (event.type === 'error') {
+          this.clearStreamingState(optimistic.messageId);
+          this.toast.error('Failed to get a reply');
+        }
       },
-      error: (error) => {
-        this.messages.set(this.messages().filter((m) => m.messageId !== optimistic.messageId));
-        this.isLoading.set(false);
-        const message = error?.status === 429 ? 'Too many requests. Please wait a moment.' : 'Failed to get a reply';
+      error: (err) => {
+        this.clearStreamingState(optimistic.messageId);
+        const message = err?.status === 429 ? 'Too many requests. Please wait a moment.' : 'Failed to get a reply';
         this.toast.error(message);
       },
+      complete: () => {
+        // Safety net in case done event was missing.
+        this.isLoading.set(false);
+        this.streamingText.set('');
+        this.streamingTools.set([]);
+      },
     });
+  }
+
+  private clearStreamingState(optimisticId: number): void {
+    this.messages.set(this.messages().filter((m) => m.messageId !== optimisticId));
+    this.streamingText.set('');
+    this.streamingTools.set([]);
+    this.isLoading.set(false);
   }
 
   toggleSidebar(): void {

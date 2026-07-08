@@ -1,5 +1,5 @@
 <div class="message-list">
-  @if (messages.length === 0 && !loading) {
+  @if (messages.length === 0 && !loading && !streamingText && streamingTools.length === 0) {
     <div class="empty-state">
       <i class="fas fa-comments empty-icon"></i>
       <p>Ask me about fund balance, your contributions, or causes.</p>
@@ -9,14 +9,55 @@
   @for (message of messages; track message.messageId) {
     <div class="message-row" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
       @if (message.role === 'assistant') {
-        <div class="bubble markdown-body" [innerHTML]="message.content | markdown"></div>
+        <div class="streaming-wrapper">
+          @if (message.toolsUsed && message.toolsUsed.length > 0) {
+            <div class="tool-strip">
+              @for (tool of message.toolsUsed; track tool) {
+                <span class="tool-chip">
+                  <i class="fas fa-database"></i>
+                  {{ toolLabel(tool) }}
+                  <i class="fas fa-check tool-done"></i>
+                </span>
+              }
+            </div>
+          }
+          <div class="bubble markdown-body" [innerHTML]="message.content | markdown"></div>
+        </div>
       } @else {
         <div class="bubble">{{ message.content }}</div>
       }
     </div>
   }
 
-  @if (loading) {
+  <!-- Live streaming: tool calls + token-by-token text -->
+  @if (streamingTools.length > 0 || streamingText) {
+    <div class="message-row assistant">
+      <div class="streaming-wrapper">
+        @if (streamingTools.length > 0) {
+          <div class="tool-strip" [class.running]="!streamingText">
+            @for (tool of streamingTools; track tool) {
+              <span class="tool-chip">
+                <i class="fas fa-database"></i>
+                {{ toolLabel(tool) }}
+                @if (!streamingText) {
+                  <span class="tool-spinner"></span>
+                } @else {
+                  <i class="fas fa-check tool-done"></i>
+                }
+              </span>
+            }
+          </div>
+        }
+        @if (streamingText) {
+          <div class="bubble markdown-body streaming" [innerHTML]="streamingText | markdown"></div>
+        } @else {
+          <div class="bubble thinking">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+        }
+      </div>
+    </div>
+  } @else if (loading) {
     <div class="message-row assistant">
       <div class="bubble thinking">
         <span class="dot"></span><span class="dot"></span><span class="dot"></span>

@@ -30,7 +30,12 @@
     }
 
     <div class="messages" #scrollContainer>
-      <app-chat-message-list [messages]="messages()" [loading]="isLoading()"></app-chat-message-list>
+      <app-chat-message-list
+        [messages]="messages()"
+        [loading]="isLoading()"
+        [streamingText]="streamingText()"
+        [streamingTools]="streamingTools()"
+      ></app-chat-message-list>
     </div>
 
     <div (click)="onInputAreaClick()">
