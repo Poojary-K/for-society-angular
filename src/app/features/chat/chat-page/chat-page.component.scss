@@ -93,6 +93,89 @@
   flex-shrink: 0;
 
   i { font-size: 13px; }
+
+  &.busy {
+    background-color: #fff7ed;
+    border-bottom-color: #fdba74;
+    color: #9a3412;
+  }
+}
+
+.pending-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px;
+  background-color: #eff6ff;
+  border-bottom: 1px solid #bfdbfe;
+  flex-shrink: 0;
+
+  .pending-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+
+    i {
+      color: #2563eb;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    strong {
+      display: block;
+      font-size: 13px;
+      color: #1e40af;
+    }
+
+    p {
+      margin: 2px 0 0;
+      font-size: 13px;
+      color: #374151;
+    }
+  }
+
+  .pending-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-confirm,
+  .btn-cancel {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-confirm {
+    background: #2563eb;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+      background: #1d4ed8;
+    }
+  }
+
+  .btn-cancel {
+    background: #fff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+
+    &:hover:not(:disabled) {
+      background: #f3f4f6;
+    }
+  }
 }
 
 .messages {

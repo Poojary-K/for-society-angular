@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { ChatService } from '../services/chat.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { SidebarService } from '../../../core/services/sidebar.service';
-import { ChatSession, ChatMessage } from '../models/chat.model';
+import { ChatSession, ChatMessage, SessionPendingState } from '../models/chat.model';
 import { ChatSessionListComponent } from '../chat-session-list/chat-session-list.component';
 import { ChatMessageListComponent } from '../chat-message-list/chat-message-list.component';
 import { ChatInputComponent } from '../chat-input/chat-input.component';
@@ -29,10 +29,14 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   isLoading = signal<boolean>(false);
   sidebarOpen = signal<boolean>(false);
   agentAvailable = signal<boolean>(true);
+  agentStatus = signal<'available' | 'busy' | 'unavailable'>('available');
+  agentStatusMessage = signal<string | null>(null);
   agentDown = computed(() => !this.agentAvailable());
+  agentBusy = computed(() => this.agentStatus() === 'busy');
 
   streamingText = signal<string>('');
   streamingTools = signal<string[]>([]);
+  pendingState = signal<SessionPendingState | null>(null);
 
   private healthInterval?: ReturnType<typeof setInterval>;
   private streamSubscription?: Subscription;
@@ -55,14 +59,31 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private pollAgentHealth(): void {
     this.chatService.getAgentHealth().subscribe({
-      next: ({ available }) => this.agentAvailable.set(available),
-      error: () => this.agentAvailable.set(false),
+      next: (health) => {
+        this.agentAvailable.set(health.available);
+        this.agentStatus.set(health.status ?? (health.available ? 'available' : 'unavailable'));
+        this.agentStatusMessage.set(health.message ?? null);
+      },
+      error: () => {
+        this.agentAvailable.set(false);
+        this.agentStatus.set('unavailable');
+        this.agentStatusMessage.set('The AI assistant is temporarily unavailable.');
+      },
     });
   }
 
   onInputAreaClick(): void {
+    if (this.agentBusy()) {
+      this.toast.error(
+        this.agentStatusMessage() ??
+          'The AI service is currently busy. Please wait a moment and try again.',
+      );
+      return;
+    }
     if (this.agentDown()) {
-      this.toast.error('AI assistant is currently unavailable. Please try again later.');
+      this.toast.error(
+        this.agentStatusMessage() ?? 'AI assistant is currently unavailable. Please try again later.',
+      );
     }
   }
 
@@ -95,11 +116,28 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
       },
       error: () => this.toast.error('Failed to load conversation'),
     });
+    this.loadPendingState(sessionId);
+  }
+
+  private loadPendingState(sessionId: number): void {
+    this.chatService.getSessionPending(sessionId).subscribe({
+      next: (state) => this.pendingState.set(state),
+      error: () => this.pendingState.set(null),
+    });
+  }
+
+  onConfirmPending(): void {
+    this.onSend('yes');
+  }
+
+  onCancelPending(): void {
+    this.onSend('no');
   }
 
   createNewSession(): void {
     this.activeSessionId.set(null);
     this.messages.set([]);
+    this.pendingState.set(null);
     this.sidebarOpen.set(false);
   }
 
@@ -168,15 +206,28 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
           this.isLoading.set(false);
           this.shouldScroll = true;
           this.loadSessions();
+          const activeId = this.activeSessionId();
+          if (activeId !== null) {
+            this.loadPendingState(activeId);
+          }
+          this.pollAgentHealth();
         } else if (event.type === 'error') {
-          this.clearStreamingState(optimistic.messageId);
-          this.toast.error('Failed to get a reply');
+          this.toast.error(event.message ?? 'Failed to get a reply');
+          this.pollAgentHealth();
         }
       },
       error: (err) => {
         this.clearStreamingState(optimistic.messageId);
-        const message = err?.status === 429 ? 'Too many requests. Please wait a moment.' : 'Failed to get a reply';
+        let message = 'Failed to get a reply';
+        if (err?.status === 429) {
+          message = 'Too many requests. Please wait a moment.';
+        } else if (err?.status === 503) {
+          message = 'The AI service is currently busy. Please wait a moment and try again.';
+        } else if (typeof err?.message === 'string' && err.message.length > 0) {
+          message = err.message;
+        }
         this.toast.error(message);
+        this.pollAgentHealth();
       },
       complete: () => {
         // Safety net in case done event was missing.

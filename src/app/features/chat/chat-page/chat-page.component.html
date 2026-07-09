@@ -23,9 +23,25 @@
     </header>
 
     @if (agentDown()) {
-      <div class="agent-down-banner">
-        <i class="fas fa-exclamation-triangle"></i>
-        <span>AI assistant is currently unavailable</span>
+      <div class="agent-down-banner" [class.busy]="agentBusy()">
+        <i class="fas" [class.fa-hourglass-half]="agentBusy()" [class.fa-exclamation-triangle]="!agentBusy()"></i>
+        <span>{{ agentStatusMessage() ?? (agentBusy() ? 'AI assistant is busy — hosted models are queued, please try again shortly' : 'AI assistant is currently unavailable') }}</span>
+      </div>
+    }
+
+    @if (pendingState()?.active; as pending) {
+      <div class="pending-banner">
+        <div class="pending-info">
+          <i class="fas fa-clock"></i>
+          <div>
+            <strong>Action awaiting confirmation</strong>
+            <p>{{ pending.summary }}</p>
+          </div>
+        </div>
+        <div class="pending-actions">
+          <button class="btn-confirm" (click)="onConfirmPending()" [disabled]="isLoading()">Confirm</button>
+          <button class="btn-cancel" (click)="onCancelPending()" [disabled]="isLoading()">Cancel</button>
+        </div>
       </div>
     }
 

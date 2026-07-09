@@ -4,7 +4,7 @@ import { Observable, map, shareReplay } from 'rxjs';
 import { ApiResponse } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
-import { ChatSession, ChatMessage, SendMessageResponse, AgentHealth, StreamEvent, StreamEventType, ToolMeta } from '../models/chat.model';
+import { ChatSession, ChatMessage, SendMessageResponse, AgentHealth, StreamEvent, StreamEventType, ToolMeta, SessionPendingState } from '../models/chat.model';
 
 @Injectable({
   providedIn: 'root',
@@ -53,6 +53,12 @@ export class ChatService {
   getSession(sessionId: number): Observable<{ session: ChatSession; messages: ChatMessage[] }> {
     return this.http
       .get<ApiResponse<{ session: ChatSession; messages: ChatMessage[] }>>(`${this.baseUrl}/sessions/${sessionId}`)
+      .pipe(map((response) => response.data));
+  }
+
+  getSessionPending(sessionId: number): Observable<SessionPendingState> {
+    return this.http
+      .get<ApiResponse<SessionPendingState>>(`${this.baseUrl}/sessions/${sessionId}/pending`)
       .pipe(map((response) => response.data));
   }
 

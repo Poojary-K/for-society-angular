@@ -5,6 +5,25 @@ export interface ChatSession {
   updatedAt: string;
 }
 
+export interface PendingTask {
+  pendingId: number;
+  actionType: string;
+  payload: unknown;
+  summary: string;
+  status: string;
+  expiresAt: string;
+  supersededBy?: number;
+}
+
+export interface SessionPendingState {
+  active: PendingTask | null;
+  recentlySuperseded: Array<{
+    pendingId: number;
+    summary: string;
+    supersededAt: string;
+  }>;
+}
+
 export interface ChatMessage {
   messageId: number;
   role: 'user' | 'assistant';
@@ -21,6 +40,8 @@ export interface SendMessageResponse {
 
 export interface AgentHealth {
   available: boolean;
+  status?: 'available' | 'busy' | 'unavailable';
+  message?: string;
 }
 
 export interface ToolMeta {
@@ -37,5 +58,7 @@ export interface StreamEvent {
   userMessage?: ChatMessage;
   assistantMessage?: ChatMessage;
   toolsUsed?: string[];
+  pendingTask?: PendingTask | null;
   message?: string;
+  status?: number;
 }
