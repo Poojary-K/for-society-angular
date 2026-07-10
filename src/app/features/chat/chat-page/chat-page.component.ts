@@ -37,6 +37,7 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   streamingText = signal<string>('');
   streamingTools = signal<string[]>([]);
   pendingState = signal<SessionPendingState | null>(null);
+  pendingActionLoading = signal<boolean>(false);
 
   private healthInterval?: ReturnType<typeof setInterval>;
   private streamSubscription?: Subscription;
@@ -127,11 +128,43 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   onConfirmPending(): void {
-    this.onSend('yes');
+    const sessionId = this.activeSessionId();
+    if (sessionId === null || this.pendingActionLoading()) {
+      return;
+    }
+    this.pendingActionLoading.set(true);
+    this.chatService.confirmSessionPending(sessionId).subscribe({
+      next: (result) => {
+        this.messages.set([...this.messages(), result.assistantMessage]);
+        this.pendingState.set(result.pending);
+        this.pendingActionLoading.set(false);
+        this.shouldScroll = true;
+      },
+      error: (err) => {
+        this.pendingActionLoading.set(false);
+        this.toast.error(err?.error?.message ?? 'Failed to confirm action');
+      },
+    });
   }
 
   onCancelPending(): void {
-    this.onSend('no');
+    const sessionId = this.activeSessionId();
+    if (sessionId === null || this.pendingActionLoading()) {
+      return;
+    }
+    this.pendingActionLoading.set(true);
+    this.chatService.cancelSessionPending(sessionId).subscribe({
+      next: (result) => {
+        this.messages.set([...this.messages(), result.assistantMessage]);
+        this.pendingState.set(result.pending);
+        this.pendingActionLoading.set(false);
+        this.shouldScroll = true;
+      },
+      error: (err) => {
+        this.pendingActionLoading.set(false);
+        this.toast.error(err?.error?.message ?? 'Failed to cancel action');
+      },
+    });
   }
 
   createNewSession(): void {
@@ -208,7 +241,14 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
           this.loadSessions();
           const activeId = this.activeSessionId();
           if (activeId !== null) {
-            this.loadPendingState(activeId);
+            if (event.pendingTask !== undefined) {
+              this.pendingState.set({
+                active: event.pendingTask,
+                recentlySuperseded: this.pendingState()?.recentlySuperseded ?? [],
+              });
+            } else {
+              this.loadPendingState(activeId);
+            }
           }
           this.pollAgentHealth();
         } else if (event.type === 'error') {

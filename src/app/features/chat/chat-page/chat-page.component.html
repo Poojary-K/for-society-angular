@@ -29,28 +29,16 @@
       </div>
     }
 
-    @if (pendingState()?.active; as pending) {
-      <div class="pending-banner">
-        <div class="pending-info">
-          <i class="fas fa-clock"></i>
-          <div>
-            <strong>Action awaiting confirmation</strong>
-            <p>{{ pending.summary }}</p>
-          </div>
-        </div>
-        <div class="pending-actions">
-          <button class="btn-confirm" (click)="onConfirmPending()" [disabled]="isLoading()">Confirm</button>
-          <button class="btn-cancel" (click)="onCancelPending()" [disabled]="isLoading()">Cancel</button>
-        </div>
-      </div>
-    }
-
     <div class="messages" #scrollContainer>
       <app-chat-message-list
         [messages]="messages()"
         [loading]="isLoading()"
         [streamingText]="streamingText()"
         [streamingTools]="streamingTools()"
+        [pendingTask]="pendingState()?.active ?? null"
+        [pendingActionLoading]="pendingActionLoading()"
+        (confirmPending)="onConfirmPending()"
+        (cancelPending)="onCancelPending()"
       ></app-chat-message-list>
     </div>
 

@@ -49,6 +49,11 @@ export interface ToolMeta {
   label: string;
 }
 
+export interface PendingActionResponse {
+  assistantMessage: ChatMessage;
+  pending: SessionPendingState;
+}
+
 export type StreamEventType = 'tool_start' | 'token' | 'done' | 'error';
 
 export interface StreamEvent {

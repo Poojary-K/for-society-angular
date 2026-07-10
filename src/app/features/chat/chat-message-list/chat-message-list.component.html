@@ -9,7 +9,7 @@
   @for (message of messages; track message.messageId) {
     <div class="message-row" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
       @if (message.role === 'assistant') {
-        <div class="streaming-wrapper">
+        <div class="streaming-wrapper" [class.pending-wrapper]="showPendingActions(message)">
           @if (message.toolsUsed && message.toolsUsed.length > 0) {
             <div class="tool-strip">
               @for (tool of message.toolsUsed; track tool) {
@@ -21,7 +21,17 @@
               }
             </div>
           }
-          <div class="bubble markdown-body" [innerHTML]="message.content | markdown"></div>
+          <div class="bubble markdown-body" [class.pending-bubble]="showPendingActions(message)" [innerHTML]="message.content | markdown"></div>
+          @if (showPendingActions(message)) {
+            <div class="pending-actions">
+              <button type="button" class="btn-confirm" [disabled]="pendingActionLoading || loading" (click)="confirmPending.emit()">
+                Yes
+              </button>
+              <button type="button" class="btn-cancel" [disabled]="pendingActionLoading || loading" (click)="cancelPending.emit()">
+                No
+              </button>
+            </div>
+          }
         </div>
       } @else {
         <div class="bubble">{{ message.content }}</div>

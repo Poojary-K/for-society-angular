@@ -4,7 +4,7 @@ import { Observable, map, shareReplay } from 'rxjs';
 import { ApiResponse } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
-import { ChatSession, ChatMessage, SendMessageResponse, AgentHealth, StreamEvent, StreamEventType, ToolMeta, SessionPendingState } from '../models/chat.model';
+import { ChatSession, ChatMessage, SendMessageResponse, AgentHealth, StreamEvent, StreamEventType, ToolMeta, SessionPendingState, PendingTask, PendingActionResponse } from '../models/chat.model';
 
 @Injectable({
   providedIn: 'root',
@@ -59,6 +59,18 @@ export class ChatService {
   getSessionPending(sessionId: number): Observable<SessionPendingState> {
     return this.http
       .get<ApiResponse<SessionPendingState>>(`${this.baseUrl}/sessions/${sessionId}/pending`)
+      .pipe(map((response) => response.data));
+  }
+
+  confirmSessionPending(sessionId: number): Observable<PendingActionResponse> {
+    return this.http
+      .post<ApiResponse<PendingActionResponse>>(`${this.baseUrl}/sessions/${sessionId}/pending/confirm`, {})
+      .pipe(map((response) => response.data));
+  }
+
+  cancelSessionPending(sessionId: number): Observable<PendingActionResponse> {
+    return this.http
+      .post<ApiResponse<PendingActionResponse>>(`${this.baseUrl}/sessions/${sessionId}/pending/cancel`, {})
       .pipe(map((response) => response.data));
   }
 
