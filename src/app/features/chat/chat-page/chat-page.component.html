@@ -39,6 +39,7 @@
         [pendingActionLoading]="pendingActionLoading()"
         (confirmPending)="onConfirmPending()"
         (cancelPending)="onCancelPending()"
+        (suggestionSelect)="onSend($event)"
       ></app-chat-message-list>
     </div>
 

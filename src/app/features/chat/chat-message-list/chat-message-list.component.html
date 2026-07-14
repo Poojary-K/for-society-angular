@@ -3,6 +3,18 @@
     <div class="empty-state">
       <i class="fas fa-comments empty-icon"></i>
       <p>Ask me about fund balance, your contributions, or causes.</p>
+      <div class="suggestions" role="list">
+        @for (item of suggestions; track item.label) {
+          <button
+            type="button"
+            class="suggestion-chip"
+            role="listitem"
+            (click)="onSuggestionClick(item.prompt)"
+          >
+            {{ item.label }}
+          </button>
+        }
+      </div>
     </div>
   }
 
