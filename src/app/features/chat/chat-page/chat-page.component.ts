@@ -22,6 +22,7 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   private sidebarService = inject(SidebarService);
 
   @ViewChild('scrollContainer') private scrollContainer?: ElementRef<HTMLElement>;
+  @ViewChild(ChatInputComponent) private chatInput?: ChatInputComponent;
 
   sessions = signal<ChatSession[]>([]);
   activeSessionId = signal<number | null>(null);
@@ -188,6 +189,11 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
       },
       error: () => this.toast.error('Failed to delete chat'),
     });
+  }
+
+  onSuggestionSelect(prompt: string): void {
+    // Prefill the input bar with the example prompt; the user chooses to send.
+    this.chatInput?.fill(prompt);
   }
 
   onSend(content: string): void {
