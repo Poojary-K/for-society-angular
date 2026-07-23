@@ -43,6 +43,13 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   private healthInterval?: ReturnType<typeof setInterval>;
   private streamSubscription?: Subscription;
 
+  /** Session that owns the in-flight SSE (may differ from activeSessionId while backgrounded). */
+  private streamSessionId: number | null = null;
+  private streamOptimistic: ChatMessage | null = null;
+  private streamText = '';
+  private streamTools: string[] = [];
+  private streamLoading = false;
+
   private shouldScroll = false;
   private readonly sidebarHandle = { toggle: () => this.toggleSidebar() };
 
@@ -56,7 +63,7 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   ngOnDestroy(): void {
     this.sidebarService.unregisterSidebar(this.sidebarHandle);
     clearInterval(this.healthInterval);
-    this.streamSubscription?.unsubscribe();
+    this.abortStream();
   }
 
   private pollAgentHealth(): void {
@@ -111,9 +118,15 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   selectSession(sessionId: number): void {
     this.activeSessionId.set(sessionId);
     this.sidebarOpen.set(false);
+    this.syncDisplayedStreaming(sessionId);
+
     this.chatService.getSession(sessionId).subscribe({
       next: (data) => {
-        this.messages.set(data.messages);
+        if (this.activeSessionId() !== sessionId) {
+          return;
+        }
+        this.messages.set(this.mergeStreamOptimistic(sessionId, data.messages));
+        this.syncDisplayedStreaming(sessionId);
         this.shouldScroll = true;
       },
       error: () => this.toast.error('Failed to load conversation'),
@@ -123,8 +136,16 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private loadPendingState(sessionId: number): void {
     this.chatService.getSessionPending(sessionId).subscribe({
-      next: (state) => this.pendingState.set(state),
-      error: () => this.pendingState.set(null),
+      next: (state) => {
+        if (this.activeSessionId() === sessionId) {
+          this.pendingState.set(state);
+        }
+      },
+      error: () => {
+        if (this.activeSessionId() === sessionId) {
+          this.pendingState.set(null);
+        }
+      },
     });
   }
 
@@ -173,6 +194,7 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.messages.set([]);
     this.pendingState.set(null);
     this.sidebarOpen.set(false);
+    this.clearDisplayedStreaming();
   }
 
   deleteSession(sessionId: number): void {
@@ -181,6 +203,9 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     this.chatService.archiveSession(sessionId).subscribe({
       next: () => {
+        if (this.streamSessionId === sessionId) {
+          this.abortStream();
+        }
         this.sessions.set(this.sessions().filter((s) => s.sessionId !== sessionId));
         if (this.activeSessionId() === sessionId) {
           this.createNewSession();
@@ -213,57 +238,73 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private dispatchMessage(sessionId: number, content: string): void {
+    this.streamSubscription?.unsubscribe();
+
     const optimistic: ChatMessage = {
       messageId: -Date.now(),
       role: 'user',
       content,
       createdAt: new Date().toISOString(),
     };
+
+    this.streamSessionId = sessionId;
+    this.streamOptimistic = optimistic;
+    this.streamText = '';
+    this.streamTools = [];
+    this.streamLoading = true;
+
     this.messages.set([...this.messages(), optimistic]);
-    this.isLoading.set(true);
-    this.streamingText.set('');
-    this.streamingTools.set([]);
+    this.paintStreamFromBuffer();
     this.shouldScroll = true;
 
-    this.streamSubscription?.unsubscribe();
     this.streamSubscription = this.chatService.streamMessage(sessionId, content).subscribe({
       next: (event) => {
         if (event.type === 'tool_start' && event.toolName) {
-          this.streamingTools.update((tools) => [...tools, event.toolName!]);
-          this.shouldScroll = true;
+          this.streamTools = [...this.streamTools, event.toolName];
+          if (this.isStreamVisible(sessionId)) {
+            this.streamingTools.set([...this.streamTools]);
+            this.shouldScroll = true;
+          }
         } else if (event.type === 'token' && event.text) {
-          this.streamingText.update((t) => t + event.text);
-          this.shouldScroll = true;
+          this.streamText += event.text;
+          if (this.isStreamVisible(sessionId)) {
+            this.streamingText.set(this.streamText);
+            this.shouldScroll = true;
+          }
         } else if (event.type === 'done' && event.userMessage && event.assistantMessage) {
-          this.messages.set([
-            ...this.messages().filter((m) => m.messageId !== optimistic.messageId),
-            event.userMessage,
-            event.assistantMessage,
-          ]);
-          this.streamingText.set('');
-          this.streamingTools.set([]);
-          this.isLoading.set(false);
-          this.shouldScroll = true;
+          this.clearStreamBuffer();
           this.loadSessions();
-          const activeId = this.activeSessionId();
-          if (activeId !== null) {
+          this.pollAgentHealth();
+
+          if (this.activeSessionId() === sessionId) {
+            this.messages.set([
+              ...this.messages().filter((m) => m.messageId !== optimistic.messageId),
+              event.userMessage,
+              event.assistantMessage,
+            ]);
+            this.clearDisplayedStreaming();
+            this.shouldScroll = true;
             if (event.pendingTask !== undefined) {
               this.pendingState.set({
                 active: event.pendingTask,
                 recentlySuperseded: this.pendingState()?.recentlySuperseded ?? [],
               });
             } else {
-              this.loadPendingState(activeId);
+              this.loadPendingState(sessionId);
             }
           }
-          this.pollAgentHealth();
         } else if (event.type === 'error') {
           this.toast.error(event.message ?? 'Failed to get a reply');
           this.pollAgentHealth();
         }
       },
       error: (err) => {
-        this.clearStreamingState(optimistic.messageId);
+        const wasVisible = this.activeSessionId() === sessionId;
+        this.clearStreamBuffer();
+        if (wasVisible) {
+          this.messages.set(this.messages().filter((m) => m.messageId !== optimistic.messageId));
+          this.clearDisplayedStreaming();
+        }
         let message = 'Failed to get a reply';
         if (err?.status === 429) {
           message = 'Too many requests. Please wait a moment.';
@@ -276,19 +317,71 @@ export class ChatPageComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.pollAgentHealth();
       },
       complete: () => {
-        // Safety net in case done event was missing.
-        this.isLoading.set(false);
-        this.streamingText.set('');
-        this.streamingTools.set([]);
+        // Safety net if done event was missing.
+        if (this.streamSessionId === sessionId) {
+          this.clearStreamBuffer();
+          if (this.activeSessionId() === sessionId) {
+            this.clearDisplayedStreaming();
+          }
+        }
       },
     });
   }
 
-  private clearStreamingState(optimisticId: number): void {
-    this.messages.set(this.messages().filter((m) => m.messageId !== optimisticId));
+  private isStreamVisible(sessionId: number): boolean {
+    return this.streamSessionId === sessionId && this.activeSessionId() === sessionId;
+  }
+
+  private syncDisplayedStreaming(sessionId: number): void {
+    if (this.streamSessionId === sessionId && this.streamLoading) {
+      this.paintStreamFromBuffer();
+    } else {
+      this.clearDisplayedStreaming();
+    }
+  }
+
+  private mergeStreamOptimistic(sessionId: number, messages: ChatMessage[]): ChatMessage[] {
+    if (
+      this.streamSessionId !== sessionId ||
+      !this.streamLoading ||
+      !this.streamOptimistic
+    ) {
+      return messages;
+    }
+    const optimistic = this.streamOptimistic;
+    // Server may already have the user turn; only append the local optimistic bubble if missing.
+    const hasSameTail =
+      messages.length > 0 &&
+      messages[messages.length - 1].role === 'user' &&
+      messages[messages.length - 1].content === optimistic.content;
+    return hasSameTail ? messages : [...messages, optimistic];
+  }
+
+  private paintStreamFromBuffer(): void {
+    this.streamingText.set(this.streamText);
+    this.streamingTools.set([...this.streamTools]);
+    this.isLoading.set(this.streamLoading);
+  }
+
+  private clearDisplayedStreaming(): void {
     this.streamingText.set('');
     this.streamingTools.set([]);
     this.isLoading.set(false);
+  }
+
+  private clearStreamBuffer(): void {
+    this.streamSessionId = null;
+    this.streamOptimistic = null;
+    this.streamText = '';
+    this.streamTools = [];
+    this.streamLoading = false;
+  }
+
+  private abortStream(): void {
+    this.streamSubscription?.unsubscribe();
+    this.streamSubscription = undefined;
+    this.clearStreamBuffer();
+    this.clearDisplayedStreaming();
   }
 
   toggleSidebar(): void {
